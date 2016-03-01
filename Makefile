@@ -23,7 +23,7 @@ TEST: $(EXES)
 
 .PHONY: clean
 clean:
-	rm -f *.d *.o
+	rm -rf $(OBJS) $(EXES) $(DEPS)
 
 .PHONY: sync
 sync:
