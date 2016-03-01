@@ -12,7 +12,7 @@ namespace ResearchLibrary {
 namespace BurrowsWheelerTransform {
 
 template <typename T>
-bool GE(T x, T y) {
+bool ge(T x, T y) {
   if (y == 0) {
     return x >> (sizeof(T) * 8 - 1)? false: true;
   } else {
@@ -35,7 +35,7 @@ std::vector<size_t> suffix_sort_for_BWT(const std::vector<T>& source) {
   {
     auto last_character = source[I[0]];
     size_t g = 0;
-    for (size_t i = N - 1; GE(i, decltype(i)(0)); i--) {
+    for (size_t i = N - 1; ge(i, decltype(i)(0)); i--) {
       if (last_character != source[I[i]]) {
         g = i;
         last_character = source[I[i]];
@@ -75,7 +75,7 @@ std::vector<size_t> suffix_sort_for_BWT(const std::vector<T>& source) {
         });
         auto group = last_position;
         auto group_inv = V[(I[group] + h) % N];
-        for (auto i = last_position; GE(i, first_position); i--) {
+        for (auto i = last_position; ge(i, first_position); i--) {
           auto i_inv = V[(I[i] + h) % N];
           if (first_position <= i_inv && i_inv < last_position) {
             i_inv = last_position;

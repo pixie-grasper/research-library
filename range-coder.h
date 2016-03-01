@@ -3,25 +3,12 @@
 #ifndef RANGE_CODER_H_
 #define RANGE_CODER_H_
 
-// The ``grater-than-or-equal-to'' operator for unsigneds
-// NOTE: as if y == 0, x >= y always returns true,
-//       but x + 1 >= y + 1, WYSIWYG as x >= y.
-//       CAUTION: if y + 1 == 0, the x + 1 >= y + 1 expression
-//                always returns true but the x >= y always returns false.
-// USAGE: x GE y
-#define GE + 1 >= 1 +
-
 #include <stdint.h>
 
 int gets();
 #include <vector>
 #include <map>
-#include <set>
 #include <utility>
-#include <memory>
-#include <functional>
-#include <algorithm>
-#include <iterator>
 
 #include "./size-type.h"
 
@@ -155,15 +142,10 @@ auto decode_process(DecoderContinuation<N, T>&& cont,
     }
   }
   auto ch = left;
-LABEL_DECODE_PROCESS_1:
   auto low = idiv<N>(sum_freq[ch], sum);
   auto range = idiv<N>(freq[ch].second, sum);
   auto new_low = cont.low + mulhi<N>(cont.range, low);
   auto new_range = mulhi<N>(cont.range, range);
-  if (cont.data - new_low >= new_range) {
-    ch++;
-    goto LABEL_DECODE_PROCESS_1;
-  }
   cont.low = new_low;
   cont.range = new_range;
   cont.buffer = freq[ch].first;
@@ -208,7 +190,8 @@ auto StaticEncode(const std::vector<T>& data) {
   for (auto&& it = freq_map.begin(); it != freq_map.end(); ++it) {
     freq.push_back(*it);
   }
-  return std::make_pair(StaticEncode(data, freq), freq);
+  auto&& encoded = StaticEncode(data, freq);
+  return std::make_pair(std::move(encoded), std::move(freq));
 }
 
 template <typename T>
