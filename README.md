@@ -10,6 +10,7 @@
 現在までに
 
 - Burrows Wheeler Transform
+- Move To Front
 - Range Coder
 
 が実装されています。
@@ -17,7 +18,6 @@
 ## TODO
 以下のアルゴリズムを実装する予定です。
 
-- Move To Front
 - Fast Fourier Transform / Discrete Cosine Transform
 - Wavelet Transform family
 - Prediction by Partial Matching

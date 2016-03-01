@@ -1,4 +1,4 @@
-LIBS = burrows-wheeler-transform.h size-type.h range-coder.h
+LIBS = burrows-wheeler-transform.h size-type.h range-coder.h move-to-front.h
 SRCS = $(LIBS:%.h=tests/%-test.cc)
 OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.d)
@@ -13,7 +13,7 @@ SYNTAX_CHECK:
 
 .PHONY: TEST
 TEST: $(EXES)
-	@for e in $(EXES); do ./$$e; if [ $$? -ne 0 ]; then echo "[test] [1;31mfailed.[0m $$e"; else echo "[test] [32msucceed.[0m $$e"; fi; done
+	@for e in $(EXES); do ./$$e; if [ $$? -ne 0 ]; then echo "[test] [1;31mfailed. [0m $$e"; else echo "[test] [32msucceed.[0m $$e"; fi; done
 
 %.out: %.o
 	clang++ $< -o $@
