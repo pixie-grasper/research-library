@@ -1,5 +1,5 @@
 LIBS = burrows-wheeler-transform.h size-type.h range-coder.h
-SRCS = $(LIBS:.h=-test.cc)
+SRCS = $(LIBS:%.h=tests/%-test.cc)
 OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.d)
 HEADERS = $(SRCS:.cc=.h) $(LIBS)

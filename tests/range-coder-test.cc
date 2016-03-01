@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "./range-coder.h"
+#include "../range-coder.h"
 
 int main() {
   std::vector<int> buffer(10000);

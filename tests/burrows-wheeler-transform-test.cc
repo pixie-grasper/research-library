@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "./burrows-wheeler-transform.h"
+#include "../burrows-wheeler-transform.h"
 
 int main() {
   std::vector<int> buffer(10000);
