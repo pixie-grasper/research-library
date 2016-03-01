@@ -2,4 +2,4 @@
 *.swo
 *.d
 *.o
-test
+*.out

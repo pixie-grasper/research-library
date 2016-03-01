@@ -1,22 +1,24 @@
-SRCS = test.cc
+LIBS = burrows-wheeler-transform.h size-type.h range-coder.h
+SRCS = $(LIBS:.h=-test.cc)
 OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.d)
-HEADERS = $(SRCS:.cc=.h) burrows-wheeler-transform.h size-type.h range-coder.h
+HEADERS = $(SRCS:.cc=.h) $(LIBS)
+EXES = $(SRCS:.cc=.out)
 
-PROJECT = test
+default: SYNTAX_CHECK $(OBJS) $(PROJECT) TEST
 
-default: CHECK $(OBJS) $(PROJECT) RUN
-
-.PHONY: CHECK
-CHECK:
+.PHONY: SYNTAX_CHECK
+SYNTAX_CHECK:
 	./cpplint.py --filter=-build/c++11 $(SRCS) $(HEADERS)
 
-.PHONY: RUN
-RUN: $(PROJECT)
-	./$(PROJECT)
+.PHONY: TEST
+TEST: $(EXES)
+	for e in $(EXES); do\
+		./$$e;\
+	done
 
-$(PROJECT): $(OBJS)
-	clang++ $^ -o $@
+%.out: %.o
+	clang++ $< -o $@
 
 %.o: %.cc Makefile
 	clang++ -c $< -o $@ -std=c++1y -MMD -MP -Weverything -Wno-c++98-compat -Wno-reserved-id-macro -Wno-padded -Wno-format-nonliteral -Wno-c++98-compat-pedantic -Wno-weak-vtables
