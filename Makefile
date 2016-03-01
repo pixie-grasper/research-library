@@ -13,9 +13,7 @@ SYNTAX_CHECK:
 
 .PHONY: TEST
 TEST: $(EXES)
-	for e in $(EXES); do\
-		./$$e;\
-	done
+	@for e in $(EXES); do ./$$e; if [ $$? -ne 0 ]; then echo "[test] [1;31mfailed.[0m $$e"; else echo "[test] [32msucceed.[0m $$e"; fi; done
 
 %.out: %.o
 	clang++ $< -o $@
