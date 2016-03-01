@@ -12,13 +12,14 @@
 - Burrows Wheeler Transform
 - Move To Front
 - Range Coder
+- Fast Fourier Transform
 
 が実装されています。
 
 ## TODO
 以下のアルゴリズムを実装する予定です。
 
-- Fast Fourier Transform / Discrete Cosine Transform
+- Discrete Cosine Transform
 - Wavelet Transform family
 - Prediction by Partial Matching
 
