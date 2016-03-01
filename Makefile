@@ -1,4 +1,4 @@
-LIBS = burrows-wheeler-transform.h size-type.h range-coder.h move-to-front.h fast-fourier-transform.h
+LIBS = $(wildcard *.h)
 SRCS = $(LIBS:%.h=tests/%-test.cc)
 OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.d)

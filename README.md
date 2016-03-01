@@ -13,13 +13,13 @@
 - Move To Front
 - Range Coder
 - Fast Fourier Transform
+- Discrete Cosine Transform
 
 が実装されています。
 
 ## TODO
 以下のアルゴリズムを実装する予定です。
 
-- Discrete Cosine Transform
 - Wavelet Transform family
 - Prediction by Partial Matching
 
