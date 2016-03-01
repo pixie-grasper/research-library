@@ -27,6 +27,7 @@ clean:
 
 .PHONY: sync
 sync:
+	git pull origin master
 	git push origin master
 
 -include $(DEPS)
