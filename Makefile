@@ -12,7 +12,7 @@ HEADERS = $(SRCS:.cc=.h) $(LIBS)
 EXES = $(SRCS:.cc=.out)
 
 # if exists libc++, use it.
-LIBCPP = $(shell if $(CXX) dummy.cc -o dummy.out -lc++ > /dev/null 2>&1; then echo '-lstdc++'; else echo '-lc++'; fi)
+LIBCPP = $(shell if $(CXX) dummy.cc -o dummy.out -lc++ -std=c++1y > /dev/null 2>&1; then echo '-lc++'; else echo '-lstdc++'; fi)
 
 INSTALL_DIR = $(shell cat libresearch.pc | grep 'includedir=' | sed 's/includedir=//')
 
