@@ -1,7 +1,7 @@
 // Copyright 2015 pixie-grasper
 
-#ifndef FAST_FOURIER_TRANSFORM_H_
-#define FAST_FOURIER_TRANSFORM_H_
+#ifndef INCLUDES_FAST_FOURIER_TRANSFORM_H_
+#define INCLUDES_FAST_FOURIER_TRANSFORM_H_
 
 int gets();
 #include <vector>
@@ -10,7 +10,11 @@ int gets();
 #include <algorithm>
 #include <complex>
 
+#ifdef RESEARCHLIB_OFFLINE_TEST
 #include "./size-type.h"
+#else
+#include <size-type.h>
+#endif
 
 namespace ResearchLibrary {
 namespace FastFourierTransform {
@@ -194,4 +198,4 @@ auto IFFT(const std::vector<std::complex<T>>& data) {
 }  // namespace FastFourierTransform
 }  // namespace ResearchLibrary
 
-#endif  // FAST_FOURIER_TRANSFORM_H_
+#endif  // INCLUDES_FAST_FOURIER_TRANSFORM_H_

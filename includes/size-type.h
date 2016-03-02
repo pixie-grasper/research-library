@@ -1,7 +1,7 @@
 // Copyright 2015 pixie.grasper
 
-#ifndef SIZE_TYPE_H_
-#define SIZE_TYPE_H_
+#ifndef INCLUDES_SIZE_TYPE_H_
+#define INCLUDES_SIZE_TYPE_H_
 
 #include <stdint.h>
 #include <cstddef>
@@ -39,4 +39,4 @@ using unsigned_integer_t = size_type_t<unsigned_integer_size>;
 
 }  // namespace ResearchLibrary
 
-#endif  // SIZE_TYPE_H_
+#endif  // INCLUDES_SIZE_TYPE_H_

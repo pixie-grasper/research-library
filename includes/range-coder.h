@@ -1,7 +1,7 @@
 // Copyright 2015 pixie.grasper
 
-#ifndef RANGE_CODER_H_
-#define RANGE_CODER_H_
+#ifndef INCLUDES_RANGE_CODER_H_
+#define INCLUDES_RANGE_CODER_H_
 
 #include <stdint.h>
 
@@ -10,7 +10,11 @@ int gets();
 #include <map>
 #include <utility>
 
+#ifdef RESEARCHLIB_OFFLINE_TEST
 #include "./size-type.h"
+#else
+#include <size-type.h>
+#endif
 
 namespace ResearchLibrary {
 namespace RangeCoder {
@@ -226,4 +230,4 @@ auto StaticDecode(const static_decode_1st_arg_t<T>& pair,
 }  // namespace RangeCoder
 }  // namespace ResearchLibrary
 
-#endif  // RANGE_CODER_H_
+#endif  // INCLUDES_RANGE_CODER_H_

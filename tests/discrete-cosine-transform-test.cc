@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "../discrete-cosine-transform.h"
+#include "../includes/discrete-cosine-transform.h"
 
 int main() {
   std::vector<double> buffer(1024);

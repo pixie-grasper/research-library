@@ -1,14 +1,18 @@
 // Copyright 2015 pixie-grasper
 
-#ifndef MOVE_TO_FRONT_H_
-#define MOVE_TO_FRONT_H_
+#ifndef INCLUDES_MOVE_TO_FRONT_H_
+#define INCLUDES_MOVE_TO_FRONT_H_
 
 int gets();
 #include <vector>
 #include <list>
 #include <utility>
 
+#ifdef RESEARCHLIB_OFFLINE_TEST
 #include "./size-type.h"
+#else
+#include <size-type.h>
+#endif
 
 namespace ResearchLibrary {
 namespace MoveToFront {
@@ -213,4 +217,4 @@ auto NumericIMTF(const std::vector<unsigned_integer_t>& sequence) {
 }  // namespace MoveToFront
 }  // namespace ResearchLibrary
 
-#endif  // MOVE_TO_FRONT_H_
+#endif  // INCLUDES_MOVE_TO_FRONT_H_

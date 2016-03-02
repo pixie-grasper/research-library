@@ -1,11 +1,15 @@
 // Copyright 2015 pixie-grasper
 
-#ifndef DISCRETE_COSINE_TRANSFORM_H_
-#define DISCRETE_COSINE_TRANSFORM_H_
+#ifndef INCLUDES_DISCRETE_COSINE_TRANSFORM_H_
+#define INCLUDES_DISCRETE_COSINE_TRANSFORM_H_
 
 #include <vector>
 
+#ifdef RESEARCHLIB_OFFLINE_TEST
 #include "./fast-fourier-transform.h"
+#else
+#include <fast-fourier-transform.h>
+#endif
 
 namespace ResearchLibrary {
 namespace DiscreteCosineTransform {
@@ -43,4 +47,4 @@ auto IDCT(const std::vector<T>& data) {
 }  // namespace DiscreteCosineTransform
 }  // namespace ResearchLibrary
 
-#endif  // DISCRETE_COSINE_TRANSFORM_H_
+#endif  // INCLUDES_DISCRETE_COSINE_TRANSFORM_H_

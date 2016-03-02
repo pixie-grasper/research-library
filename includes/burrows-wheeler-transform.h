@@ -1,7 +1,7 @@
 // Copyright 2015 pixie.grasper
 
-#ifndef BURROWS_WHEELER_TRANSFORM_H_
-#define BURROWS_WHEELER_TRANSFORM_H_
+#ifndef INCLUDES_BURROWS_WHEELER_TRANSFORM_H_
+#define INCLUDES_BURROWS_WHEELER_TRANSFORM_H_
 
 int gets();
 #include <vector>
@@ -152,4 +152,4 @@ std::vector<T> IBWT(const std::pair<std::vector<T>, size_t>& source) {
 }  // namespace BurrowsWheelerTransform
 }  // namespace ResearchLibrary
 
-#endif  // BURROWS_WHEELER_TRANSFORM_H_
+#endif  // INCLUDES_BURROWS_WHEELER_TRANSFORM_H_

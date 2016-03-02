@@ -1,0 +1,7 @@
+includedir=/usr/local/include/research
+
+Name: libresearch
+Description: Research Library
+Version: 0
+URL: https://github.com/pixie-grasper/research-library
+Cflags: -I${includedir}
