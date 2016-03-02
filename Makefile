@@ -16,7 +16,7 @@ LIBCPP = $(shell if $(CXX) dummy.cc -o dummy.out -lc++ -std=c++1y > /dev/null 2>
 
 INSTALL_DIR = $(shell cat libresearch.pc | grep 'includedir=' | sed 's/includedir=//')
 
-default: SYNTAX_CHECK check
+default: SYNTAX_CHECK check docs
 
 .PHONY: SYNTAX_CHECK
 SYNTAX_CHECK:
@@ -36,6 +36,10 @@ install:
 uninstall:
 	$(RM) /usr/local/lib/pkgconfig/libresearch.pc
 	$(RM) -rf $(INSTALL_DIR)
+
+.PHONY: docs
+docs:
+	doxygen Doxyfile
 
 %.out: %.o
 	$(LINK) $< -o $@ $(LIBCPP)
