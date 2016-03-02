@@ -4,7 +4,20 @@
 実装言語はC++14を用い、clangでコンパイルでき、追加のライブラリを必要とせず、MITライセンスで提供しています。
 
 ## どう使うの？
-今のところ、ライブラリを必要なだけあなたのワーキングディレクトリに追加して使う形となっています。
+```
+$ git clone https://github.com/pixie-grasper/research-library.git
+$ cd research-library
+$ make check
+$ sudo make install
+```
+
+した後に
+
+```
+$ clang++ `pkg-config --cflags libresearch` foo.cc
+```
+
+する事によって各種アルゴリズムを利用できるようになります。
 
 ## 何ができるの？
 現在までに
