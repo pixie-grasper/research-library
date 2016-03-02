@@ -1,9 +1,14 @@
 // Copyright 2015 pixie-grasper
+/// \file fast-fourier-transform.h
+/// \brief Implementation of the FFT
+/// \author pixie.grasper
 
 #ifndef INCLUDES_FAST_FOURIER_TRANSFORM_H_
 #define INCLUDES_FAST_FOURIER_TRANSFORM_H_
 
+/// \privatesection
 int gets();
+/// \publicsection
 #include <vector>
 #include <map>
 #include <utility>
@@ -16,9 +21,12 @@ int gets();
 #include <size-type.h>
 #endif
 
+/// \namespace ResearchLibrary
+/// \namespace ResearchLibrary::FastFourierTransform
 namespace ResearchLibrary {
 namespace FastFourierTransform {
 
+/// \privatesection
 template <size_t N>
 auto width_map() {
   std::map<size_type_t<N>, size_t> w;
@@ -69,6 +77,12 @@ size_type_t<8> upside_down<8>(size_type_t<8> x, size_t width) {
   return x >> (64 - width);
 }
 
+/// \publicsection
+/// \fn FFT(const std::vector<T>& re, const std::vector<T>& im)
+/// \brief Fast-Fourier Transform Function
+/// \param[in] re Real part
+/// \param[in] im Imaginary part
+/// \return std::pair of real-part and imaginary-part as std::vector<T>
 template <typename T>
 auto FFT(const std::vector<T>& re, const std::vector<T>& im) {
   auto N = re.size();
@@ -103,6 +117,11 @@ auto FFT(const std::vector<T>& re, const std::vector<T>& im) {
   return make_pair(t1re, t1im);
 }
 
+/// \publicsection
+/// \fn FFT(const std::vector<std::complex<T>>& data)
+/// \brief Fast-Fourier Transform Function
+/// \param[in] data complex vector
+/// \return complex-vector as std::vector<std::complex<T>>
 template <typename T>
 auto FFT(const std::vector<std::complex<T>>& data) {
   auto N = data.size();
@@ -126,6 +145,12 @@ auto FFT(const std::vector<std::complex<T>>& data) {
   return t1;
 }
 
+/// \publicsection
+/// \fn IFFT(const std::vector<T>& re, const std::vector<T>& im)
+/// \brief Inverse Fast-Fourier Transform Function
+/// \param[in] re Real part
+/// \param[in] im Imaginary part
+/// \return std::pair of real-part and imaginary-part as std::vector<T>
 template <typename T>
 auto IFFT(const std::vector<T>& re, const std::vector<T>& im) {
   auto N = re.size();
@@ -164,11 +189,21 @@ auto IFFT(const std::vector<T>& re, const std::vector<T>& im) {
   return make_pair(t1re, t1im);
 }
 
+/// \publicsection
+/// \fn IFFT(const std::pair<std::vector<T>, std::vector<T>>& pair)
+/// \brief Inverse Fast-Fourier Transform Function
+/// \param[in] pair std::pair of real-part and imaginary-part
+/// \return complex-vector as std::vector<std::complex<T>>
 template <typename T>
 auto IFFT(const std::pair<std::vector<T>, std::vector<T>>& pair) {
   return IFFT(pair.first, pair.second);
 }
 
+/// \publicsection
+/// \fn IFFT(const std::vector<std::complex<T>>& data)
+/// \brief Inverse Fast-Fourier Transform Function
+/// \param[in] data complex vector
+/// \return complex-vector as std::vector<std::complex<T>>
 template <typename T>
 auto IFFT(const std::vector<std::complex<T>>& data) {
   auto N = data.size();

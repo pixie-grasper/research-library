@@ -1,11 +1,16 @@
 // Copyright 2015 pixie.grasper
+/// \file range-coder.h
+/// \brief Implementation of the RangeCoder
+/// \author pixie.grasper
 
 #ifndef INCLUDES_RANGE_CODER_H_
 #define INCLUDES_RANGE_CODER_H_
 
 #include <stdint.h>
 
+/// \privatesection
 int gets();
+/// \publicsection
 #include <vector>
 #include <map>
 #include <utility>
@@ -16,9 +21,12 @@ int gets();
 #include <size-type.h>
 #endif
 
+/// \namespace ResearchLibrary
+/// \namespace ResearchLibrary::RangeCoder
 namespace ResearchLibrary {
 namespace RangeCoder {
 
+/// \privatesection
 template <size_t N>
 auto mulhi(size_type_t<N> u, size_type_t<N> v) {
   return size_type_t<N>((size_type_t<2 * N>(u) * size_type_t<2 * N>(v)) >> N);
@@ -165,6 +173,13 @@ auto decode_process(DecoderContinuation<N, T>&& cont,
   return std::move(cont);
 }
 
+/// \publicsection
+/// \fn StaticEncode(const std::vector<T>& data,
+///                  const std::vector<std::pair<T, unsigned_integer_t>>& freq)
+/// \brief RangeCoder Static Encode Function
+/// \param[in] data sequence
+/// \param[in] freq list of frequency of the characters
+/// \return encoded sequence as \c std::vector<uint8_t>
 template <typename T>
 auto StaticEncode(const std::vector<T>& data,
                   const std::vector<std::pair<T, unsigned_integer_t>>& freq) {
@@ -184,6 +199,12 @@ auto StaticEncode(const std::vector<T>& data,
   return encode_finish(std::move(cont));
 }
 
+/// \fn StaticEncode(const std::vector<T>& data)
+/// \brief RangeCoder Static Encode Function
+/// \param[in] data sequence
+/// \return std::pair of encoded sequence as \c std::vector<uint8_t> and
+///         list of frequency of the characters as
+///         std::vector<std::pair<T, unsigned_integer_t>>
 template <typename T>
 auto StaticEncode(const std::vector<T>& data) {
   std::map<T, unsigned_integer_t> freq_map;
@@ -198,6 +219,14 @@ auto StaticEncode(const std::vector<T>& data) {
   return std::make_pair(std::move(encoded), std::move(freq));
 }
 
+/// \fn StaticDecode(const std::vector<uint8_t>& data,
+///                  const std::vector<std::pair<T, unsigned_integer_t>>& freq,
+///                  size_t original_size)
+/// \brief RangeCoder Static Decode Function
+/// \param[in] data sequence
+/// \param[in] freq list of frequency of the characters on the source
+/// \param[in] original_size length of the original sequence
+/// \return original sequence as std::vector<T>
 template <typename T>
 auto StaticDecode(const std::vector<uint8_t>& data,
                   const std::vector<std::pair<T, unsigned_integer_t>>& freq,
@@ -217,12 +246,18 @@ auto StaticDecode(const std::vector<uint8_t>& data,
   return ret;
 }
 
+/// \fn StaticDecode(const std::pair<std::vector<uint8_t>,
+///                      std::vector<std::pair<T, unsigned_integer_t>>>& pair,
+///                  size_t original_size)
+/// \brief RangeCoder Static Decode Function
+/// \param[in] pair std::pair of data sequence as std::vector<uint8_t> and
+///            list of frequency of the characters on the source as
+///            std::vector<std::pair<T, unsigned_integer_t>>
+/// \param[in] original_size length of the original sequence
+/// \return original sequence as std::vector<T>
 template <typename T>
-using static_decode_1st_arg_t =
-std::pair<std::vector<uint8_t>, std::vector<std::pair<T, unsigned_integer_t>>>;
-
-template <typename T>
-auto StaticDecode(const static_decode_1st_arg_t<T>& pair,
+auto StaticDecode(const std::pair<std::vector<uint8_t>,
+                      std::vector<std::pair<T, unsigned_integer_t>>>& pair,
                   size_t original_size) {
   return StaticDecode(pair.first, pair.second, original_size);
 }

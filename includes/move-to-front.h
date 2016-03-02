@@ -1,9 +1,14 @@
 // Copyright 2015 pixie-grasper
+/// \file move-to-front.h
+/// \brief Implementation of the MTF
+/// \author pixie.grasper
 
 #ifndef INCLUDES_MOVE_TO_FRONT_H_
 #define INCLUDES_MOVE_TO_FRONT_H_
 
+/// \privatesection
 int gets();
+/// \publicsection
 #include <vector>
 #include <list>
 #include <utility>
@@ -14,10 +19,15 @@ int gets();
 #include <size-type.h>
 #endif
 
+/// \namespace ResearchLibrary
+/// \namespace ResearchLibrary::MoveToFront
 namespace ResearchLibrary {
 namespace MoveToFront {
 
-// Implementation of the MTF without limit of the dict-size
+/// \fn MTF(const std::vector<T>& data)
+/// \brief Move-to-Front Function without limit size of the dictionary
+/// \param[in] data sequence
+/// \return std::pair of MTF-ed sequence and dictionary as std::list<T>
 template <typename T>
 auto MTF(const std::vector<T>& data) {
   std::list<T> dictionary{};
@@ -46,7 +56,11 @@ auto MTF(const std::vector<T>& data) {
   return std::make_pair(std::move(sequence), std::move(raw));
 }
 
-// Implementation of the Original MTF
+/// \fn MTF(const std::vector<T>& data, size_t dictionary_max_size)
+/// \brief Original Move-to-Front Function
+/// \param[in] data sequence
+/// \param[in] dictionary_max_size maximum size of the dictionary
+/// \return std::pair of MTF-ed sequence and dictionary as std::list<T>
 template <typename T>
 auto MTF(const std::vector<T>& data, size_t dictionary_max_size) {
   std::list<T> dictionary{};
@@ -78,7 +92,11 @@ auto MTF(const std::vector<T>& data, size_t dictionary_max_size) {
   return std::make_pair(std::move(sequence), std::move(raw));
 }
 
-// assume that every data is a non-negative-number
+/// \fn NumericMTF(const std::vector<T>& data)
+/// \brief Move-to-Front Function;
+///        assume that every data is a non-negative-number
+/// \param[in] data sequence
+/// \return MTF-ed sequence
 template <typename T>
 auto NumericMTF(const std::vector<T>& data) {
   std::list<T> dictionary{};
@@ -109,6 +127,12 @@ auto NumericMTF(const std::vector<T>& data) {
   return sequence;
 }
 
+/// \fn IMTF(const std::vector<unsigned_integer_t>& sequence,
+///          const std::vector<T>& raw)
+/// \brief Inverse Move-to-Front Function
+/// \param[in] sequence MTF-ed sequence
+/// \param[in] raw Dictionary
+/// \return sequence as std::vector<T>
 template <typename T>
 auto IMTF(const std::vector<unsigned_integer_t>& sequence,
           const std::vector<T>& raw) {
@@ -138,12 +162,25 @@ auto IMTF(const std::vector<unsigned_integer_t>& sequence,
   return ret;
 }
 
+/// \fn IMTF(const std::pair<std::vector<unsigned_integer_t>, std::vector<T>>&
+///          pair)
+/// \brief Inverse Move-to-Front Function
+/// \param[in] pair std::pair of sequence MTF-ed sequence and dictionary
+/// \return sequence as std::vector<T>
 template <typename T>
 auto IMTF(const std::pair<std::vector<unsigned_integer_t>,
                           std::vector<T>>& pair) {
   return IMTF(pair.first, pair.second);
 }
 
+/// \fn IMTF(const std::vector<unsigned_integer_t>& sequence,
+///          const std::vector<T>& raw,
+///          size_t dictionary_max_size)
+/// \brief Original Inverse Move-to-Front Function
+/// \param[in] sequence MTF-ed sequence
+/// \param[in] raw Dictionary
+/// \param[in] dictionary_max_size maximum size of the dictionary
+/// \return sequence as std::vector<T>
 template <typename T>
 auto IMTF(const std::vector<unsigned_integer_t>& sequence,
           const std::vector<T>& raw,
@@ -177,6 +214,13 @@ auto IMTF(const std::vector<unsigned_integer_t>& sequence,
   return ret;
 }
 
+/// \fn IMTF(const std::pair<std::vector<unsigned_integer_t>, std::vector<T>>&
+///          pair,
+///          size_t dictionary_max_size)
+/// \brief Original Inverse Move-to-Front Function
+/// \param[in] pair std::pair of sequence MTF-ed sequence and dictionary
+/// \param[in] dictionary_max_size maximum size of the dictionary
+/// \return sequence as std::vector<T>
 template <typename T>
 auto IMTF(const std::pair<std::vector<unsigned_integer_t>,
                           std::vector<T>>& pair,
@@ -184,6 +228,10 @@ auto IMTF(const std::pair<std::vector<unsigned_integer_t>,
   return IMTF(pair.first, pair.second, dictionary_max_size);
 }
 
+/// \fn NumericIMTF(const std::vector<unsigned_integer_t>& sequence)
+/// \brief Inverse Move-to-Front Function
+/// \param[in] sequence sequence
+/// \return sequence as std::vector<T>
 template <typename T>
 auto NumericIMTF(const std::vector<unsigned_integer_t>& sequence) {
   std::list<T> dictionary{};

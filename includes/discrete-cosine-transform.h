@@ -1,4 +1,7 @@
 // Copyright 2015 pixie-grasper
+/// \file discrete-cosine-transform.h
+/// \brief Implementation of the DCT
+/// \author pixie.grasper
 
 #ifndef INCLUDES_DISCRETE_COSINE_TRANSFORM_H_
 #define INCLUDES_DISCRETE_COSINE_TRANSFORM_H_
@@ -11,9 +14,15 @@
 #include <fast-fourier-transform.h>
 #endif
 
+/// \namespace ResearchLibrary
+/// \namespace ResearchLibrary::DiscreteCosineTransform
 namespace ResearchLibrary {
 namespace DiscreteCosineTransform {
 
+/// \fn DCT(const std::vector<T>& data)
+/// \brief Discrete-Cosine Transform Function
+/// \param[in] data sequence
+/// \return specturm data as std::vector<T>
 template <typename T>
 auto DCT(const std::vector<T>& data) {
   auto N = data.size() * 4;
@@ -26,6 +35,10 @@ auto DCT(const std::vector<T>& data) {
   return ret;
 }
 
+/// \fn IDCT(const std::vector<T>& data)
+/// \brief Inverse Discrete-Cosine Transform Function
+/// \param[in] data spectrum sequence
+/// \return data as std::vector<T>
 template <typename T>
 auto IDCT(const std::vector<T>& data) {
   auto N = data.size() * 4;

@@ -1,16 +1,24 @@
 // Copyright 2015 pixie.grasper
+/// \file burrows-wheeler-transform.h
+/// \brief Implementation of the BWT
+/// \author pixie.grasper
 
 #ifndef INCLUDES_BURROWS_WHEELER_TRANSFORM_H_
 #define INCLUDES_BURROWS_WHEELER_TRANSFORM_H_
 
+/// \privatesection
 int gets();
+/// \publicsection
 #include <vector>
 #include <utility>
 #include <algorithm>
 
+/// \namespace ResearchLibrary
+/// \namespace ResearchLibrary::BurrowsWheelerTransform
 namespace ResearchLibrary {
 namespace BurrowsWheelerTransform {
 
+/// \privatesection
 template <typename T>
 bool ge(T x, T y) {
   if (y == 0) {
@@ -21,7 +29,7 @@ bool ge(T x, T y) {
 }
 
 template <typename T>
-std::vector<size_t> suffix_sort_for_BWT(const std::vector<T>& source) {
+auto suffix_sort_for_BWT(const std::vector<T>& source) {
   constexpr auto SORTED_FLAG = size_t(1) << (sizeof(size_t) * 8 - 1);
   constexpr auto MASK = ~SORTED_FLAG;
   const auto N = source.size();
@@ -107,12 +115,18 @@ std::vector<size_t> suffix_sort_for_BWT(const std::vector<T>& source) {
   return I;
 }
 
+/// \publicsection
+/// \fn BWT(const std::vector<T>& source)
+/// \brief Burrows-Wheeler Transform Function
+/// \param[in] source sequence
+/// \return \c std::pair of
+///         sorted sequence as \c std::vector<T> and index as \c size_t
 template <typename T>
-std::pair<std::vector<T>, size_t> BWT(const std::vector<T>& source) {
+auto BWT(const std::vector<T>& source) {
   if (source.size() == 0) {
-    return std::make_pair(std::vector<T>(), 0);
+    return std::make_pair(std::vector<T>(), static_cast<size_t>(0));
   } else if (source.size() == 1) {
-    return std::make_pair(source, 0);
+    return std::make_pair(source, static_cast<size_t>(0));
   }
   auto&& suffix_array = suffix_sort_for_BWT(source);
   size_t index;
@@ -126,8 +140,13 @@ std::pair<std::vector<T>, size_t> BWT(const std::vector<T>& source) {
   return std::make_pair(std::move(ret), index);
 }
 
+/// \fn IBWT(const std::vector<T>& source, size_t index)
+/// \brief Inverse Burrows-Wheeler Transform Function
+/// \param[in] source sorted sequence
+/// \param[in] index The index
+/// \return deconverted sequence as \c std::vector<T>
 template <typename T>
-std::vector<T> IBWT(const std::vector<T>& source, size_t index) {
+auto IBWT(const std::vector<T>& source, size_t index) {
   const auto N = source.size();
   std::vector<size_t> buffer(N);
   for (size_t i = 0; i < N; i++) {
@@ -141,11 +160,16 @@ std::vector<T> IBWT(const std::vector<T>& source, size_t index) {
   for (auto i = buffer[index]; ret.size() < source.size(); i = buffer[i]) {
     ret.push_back(source[i]);
   }
-  return std::move(ret);
+  return ret;
 }
 
+/// \fn IBWT(const std::pair<std::vector<T>, size_t>& source)
+/// \brief Inverse Burrows-Wheeler Transform Function
+/// \param[in] source \c std::pair of sorted sequence as
+///            \c std::vector<T> and index as \c size_t
+/// \return deconverted sequence as \c std::vector<T>
 template <typename T>
-std::vector<T> IBWT(const std::pair<std::vector<T>, size_t>& source) {
+auto IBWT(const std::pair<std::vector<T>, size_t>& source) {
   return IBWT(source.first, source.second);
 }
 
