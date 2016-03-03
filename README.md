@@ -36,6 +36,13 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 
 - Prediction by Partial Matching
 
+## NOT TODO
+以下のアルゴリズムは宗教的な理由により実装*しない*予定です。
+
+- Arithmetic Coding
+- Lempel-Ziv-Welch Algorithm
+- Karmarker's Method
+
 ## Authors
 - pixie-grasper
 
