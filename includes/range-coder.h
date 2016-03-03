@@ -102,6 +102,16 @@ auto encode_process(EncoderContinuation<N>&& cont,
 }
 
 template <size_t N>
+auto encode_process(EncoderContinuation<N>&& cont,
+                    const size_type_t<N>& low,
+                    const size_type_t<N>& range,
+                    const size_type_t<N>& sum) {
+  auto fixed_low = idiv<N>(low, sum);
+  auto fixed_range = idiv<N>(range, sum);
+  return encode_process(std::move(cont), fixed_low, fixed_range);
+}
+
+template <size_t N>
 auto encode_finish(EncoderContinuation<N>&& cont) {
   auto new_low = cont.low + cont.range / 2;
   if (new_low < cont.low) {
@@ -249,9 +259,10 @@ auto StaticEncode(const std::vector<T>& data,
   }
   auto&& cont = encode_init<unsigned_integer_size>();
   for (size_t i = 0; i < data.size(); i++) {
-    auto low = idiv<unsigned_integer_size>(sum_freq[data[i]], sum);
-    auto range = idiv<unsigned_integer_size>(freq_map[data[i]], sum);
-    cont = encode_process(std::move(cont), low, range);
+    cont = encode_process(std::move(cont),
+                          sum_freq[data[i]],
+                          freq_map[data[i]],
+                          sum);
   }
   return encode_finish(std::move(cont));
 }
@@ -348,12 +359,8 @@ auto AdaptiveEncodeA(const std::vector<T>& data, const T& max) {
     auto n = i + 1;
     auto d = size_t(data[i]);
     if (freq[d] == 0) {
-      auto low = idiv<unsigned_integer_size>(i, n);
-      auto range = idiv<unsigned_integer_size>(1, n);
-      cont = encode_process(std::move(cont), low, range);
-      low = idiv<unsigned_integer_size>(sum_nfreq[d], A - u);
-      range = idiv<unsigned_integer_size>(1, A - u);
-      cont = encode_process(std::move(cont), low, range);
+      cont = encode_process(std::move(cont), i, 1, n);
+      cont = encode_process(std::move(cont), sum_nfreq[d], 1, A - u);
       nfreq[d] = 0;
       for (auto j = d + 1; j < sum_nfreq.size(); j++) {
         sum_nfreq[j] = sum_nfreq[j - 1] + nfreq[j - 1];
@@ -369,9 +376,7 @@ auto AdaptiveEncodeA(const std::vector<T>& data, const T& max) {
         }
         incorrect_sum_freq_min = d + 1;
       }
-      auto low = idiv<unsigned_integer_size>(sum_freq[d], n);
-      auto range = idiv<unsigned_integer_size>(freq[d], n);
-      cont = encode_process(std::move(cont), low, range);
+      cont = encode_process(std::move(cont), sum_freq[d], freq[d], n);
     }
     freq[d]++;
     if (d < incorrect_sum_freq_min) {
@@ -501,15 +506,11 @@ auto AdaptiveEncodeB(const std::vector<T>& data, const T& max) {
     auto d = size_t(data[i]);
     if (freq[d] <= 1) {
       if (i != 0) {
-        auto low = idiv<unsigned_integer_size>(i - u, i);
-        auto range = idiv<unsigned_integer_size>(u, i);
-        cont = encode_process(std::move(cont), low, range);
+        cont = encode_process(std::move(cont), i - u, u, i);
       }
       auto n = A - u + v;
       if (freq[d] == 0) {
-        auto low = idiv<unsigned_integer_size>(sum_nfreq[d], n);
-        auto range = idiv<unsigned_integer_size>(1, n);
-        cont = encode_process(std::move(cont), low, range);
+        cont = encode_process(std::move(cont), sum_nfreq[d], 1, n);
         nfreq[d] = 0;
         nfreq2[d] = 1;
         for (auto j = d + 1; j < sum_nfreq2.size(); j++) {
@@ -519,12 +520,8 @@ auto AdaptiveEncodeB(const std::vector<T>& data, const T& max) {
         u++;
         v++;
       } else {
-        auto low = idiv<unsigned_integer_size>(A - u, n);
-        auto range = idiv<unsigned_integer_size>(v, n);
-        cont = encode_process(std::move(cont), low, range);
-        low = idiv<unsigned_integer_size>(sum_nfreq2[d], v);
-        range = idiv<unsigned_integer_size>(1, v);
-        cont = encode_process(std::move(cont), low, range);
+        cont = encode_process(std::move(cont), A - u, v, n);
+        cont = encode_process(std::move(cont), sum_nfreq2[d], 1, v);
         nfreq2[d] = 0;
         for (auto j = d + 1; j < sum_nfreq2.size(); j++) {
           sum_nfreq2[j] = sum_nfreq2[j - 1] + nfreq2[j - 1];
@@ -541,9 +538,7 @@ auto AdaptiveEncodeB(const std::vector<T>& data, const T& max) {
         }
         incorrect_sum_freq_min = d + 1;
       }
-      auto low = idiv<unsigned_integer_size>(sum_freq[d], i);
-      auto range = idiv<unsigned_integer_size>(freqm1[d], i);
-      cont = encode_process(std::move(cont), low, range);
+      cont = encode_process(std::move(cont), sum_freq[d], freqm1[d], i);
     }
     freqm1[d] = freq[d];
     freq[d]++;
