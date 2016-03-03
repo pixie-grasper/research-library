@@ -13,12 +13,30 @@ int main() {
   for (size_t i = 0; i < buffer.size(); i++) {
     buffer[i] = rand_r(&seed) % 100;
   }
+
   auto&& src = ResearchLibrary::RangeCoder::StaticEncode(buffer);
-  auto&& isrc = ResearchLibrary::RangeCoder::StaticDecode(src, buffer.size());
+  auto&& isrc = ResearchLibrary::RangeCoder::StaticDecode(src);
   for (size_t i = 0; i < buffer.size(); i++) {
     if (isrc[i] != buffer[i]) {
       return 1;
     }
   }
+
+  auto&& arca = ResearchLibrary::RangeCoder::AdaptiveEncodeA(buffer);
+  auto&& iarca = ResearchLibrary::RangeCoder::AdaptiveDecodeA(arca);
+  for (size_t i = 0; i < buffer.size(); i++) {
+    if (iarca[i] != buffer[i]) {
+      return 1;
+    }
+  }
+
+  auto&& arcb = ResearchLibrary::RangeCoder::AdaptiveEncodeB(buffer);
+  auto&& iarcb = ResearchLibrary::RangeCoder::AdaptiveDecodeB(arcb);
+  for (size_t i = 0; i < buffer.size(); i++) {
+    if (iarcb[i] != buffer[i]) {
+      return 1;
+    }
+  }
+
   return 0;
 }
