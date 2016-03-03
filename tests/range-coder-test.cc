@@ -38,5 +38,21 @@ int main() {
     }
   }
 
+  auto&& arcc = ResearchLibrary::RangeCoder::AdaptiveEncodeC(buffer);
+  auto&& iarcc = ResearchLibrary::RangeCoder::AdaptiveDecodeC(arcc);
+  for (size_t i = 0; i < buffer.size(); i++) {
+    if (iarcc[i] != buffer[i]) {
+      return 1;
+    }
+  }
+
+  auto&& arcd = ResearchLibrary::RangeCoder::AdaptiveEncodeD(buffer);
+  auto&& iarcd = ResearchLibrary::RangeCoder::AdaptiveDecodeD(arcd);
+  for (size_t i = 0; i < buffer.size(); i++) {
+    if (iarcd[i] != buffer[i]) {
+      return 1;
+    }
+  }
+
   return 0;
 }
