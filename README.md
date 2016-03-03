@@ -27,7 +27,7 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 - Range Coder (Static, Adaptive)
 - Fast Fourier Transform
 - Discrete Cosine Transform
-- Wavelet Transform (Haar, CDF 3/5, CDF 9/7)
+- Wavelet Transform (Haar, CDF 5/3, CDF 9/7)
 
 が実装されています。
 
