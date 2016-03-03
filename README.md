@@ -27,13 +27,13 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 - Range Coder
 - Fast Fourier Transform
 - Discrete Cosine Transform
+- Wavelet Transform family
 
 が実装されています。
 
 ## TODO
 以下のアルゴリズムを実装する予定です。
 
-- Wavelet Transform family
 - Prediction by Partial Matching
 
 ## Authors

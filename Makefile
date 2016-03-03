@@ -45,7 +45,7 @@ docs:
 	$(LINK) $< -o $@ $(LIBCPP)
 
 %.o: %.cc Makefile
-	$(CXX) -c $< -o $@ -std=c++1y -MMD -MP -Weverything -Wno-c++98-compat -Wno-reserved-id-macro -Wno-padded -Wno-format-nonliteral -Wno-c++98-compat-pedantic -Wno-weak-vtables -Wno-documentation-unknown-command -Wno-documentation -DRESEARCHLIB_OFFLINE_TEST
+	$(CXX) -c $< -o $@ -std=c++1y -MMD -MP -Weverything -Wno-c++98-compat -Wno-reserved-id-macro -Wno-padded -Wno-format-nonliteral -Wno-c++98-compat-pedantic -Wno-weak-vtables -Wno-documentation-unknown-command -Wno-documentation -Wno-missing-prototypes -DRESEARCHLIB_OFFLINE_TEST
 
 .PHONY: clean
 clean:
