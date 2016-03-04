@@ -640,10 +640,11 @@ class Predictor<T, Depth, MethodB> {
  private:
   Predictor<T, Depth - 1, MethodB> predictor;
   std::map<std::list<T>, std::map<T, unsigned_integer_t>> freq;
+  std::map<std::list<T>, std::set<T>> once;
   std::list<T> predecessor_list;
   const std::set<T> A;
   std::map<std::list<T>, size_t> n;
-  bool escaping;
+  bool escaping, escaping2;
 
  public:
   /// \fn Predictor(const std::vector<T>& A)
@@ -651,10 +652,12 @@ class Predictor<T, Depth, MethodB> {
   explicit Predictor(const std::set<T>& A_)
       : predictor(A_),
         freq{},
+        once{},
         predecessor_list{},
         A(A_),
         n{},
-        escaping(false) {
+        escaping(false),
+        escaping2(false) {
     return;
   }
 
@@ -662,7 +665,11 @@ class Predictor<T, Depth, MethodB> {
   /// \brief set escape-flag
   void enter_escape_mode() {
     if (escaping) {
-      predictor.enter_escape_mode();
+      if (escaping2) {
+        predictor.enter_escape_mode();
+      } else {
+        escaping2 = true;
+      }
     } else {
       escaping = true;
     }
@@ -673,6 +680,7 @@ class Predictor<T, Depth, MethodB> {
   /// \brief unset escape-flag
   void leave_escape_mode() {
     escaping = false;
+    escaping2 = false;
     predictor.leave_escape_mode();
     return;
   }
@@ -681,16 +689,30 @@ class Predictor<T, Depth, MethodB> {
   /// \brief returns true if has to escape
   bool has_to_escape(T value) const {
     if (escaping) {
-      return predictor.has_to_escape(value);
+      if (escaping2) {
+        return predictor.has_to_escape(value);
+      } else {
+        auto it = once.find(predecessor_list);
+        if (it != once.end()) {
+          if (it->second.find(value) != it->second.end()) {
+            return false;
+          }
+        }
+        return true;
+      }
     } else {
       if (predecessor_list.size() < Depth) {
         return true;
       }
       auto it = freq.find(predecessor_list);
       if (it != freq.end()) {
-        auto it2 = it->second.find(value);
-        if (it2 != it->second.end()) {
-          return false;
+        if (it->second.find(value) != it->second.end()) {
+          auto it2 = once.find(predecessor_list);
+          if (it2 != once.end()) {
+            if (it2->second.find(value) == it2->second.end()) {
+              return false;
+            }
+          }
         }
       }
       return true;
@@ -701,14 +723,30 @@ class Predictor<T, Depth, MethodB> {
   /// \brief returns denominator on this context
   unsigned_integer_t denominator() const {
     if (escaping) {
-      return predictor.denominator();
+      if (escaping2) {
+        return predictor.denominator();
+      } else {
+        if (predecessor_list.size() < Depth) {
+          return 1;
+        }
+        size_t s1 = 0, s2 = 0;
+        auto it = freq.find(predecessor_list);
+        if (it != freq.end()) {
+          s1 = it->second.size();
+        }
+        auto it2 = once.find(predecessor_list);
+        if (it2 != once.end()) {
+          s2 = it2->second.size();
+        }
+        return A.size() - s1 + s2;
+      }
     } else {
       if (predecessor_list.size() < Depth) {
         return 1;
       }
       auto it = n.find(predecessor_list);
       if (it != n.end()) {
-        return it->second + 1;
+        return it->second;
       } else {
         return 1;
       }
@@ -719,14 +757,27 @@ class Predictor<T, Depth, MethodB> {
   /// \brief returns numerator on this context
   unsigned_integer_t numerator() const {
     if (escaping) {
-      return predictor.numerator();
+      if (escaping2) {
+        return predictor.numerator();
+      } else {
+        if (predecessor_list.size() < Depth) {
+          return 0;
+        }
+        auto it = once.find(predecessor_list);
+        if (it != once.end()) {
+          return it->second.size();
+        } else {
+          return 0;
+        }
+      }
     } else {
       if (predecessor_list.size() < Depth) {
         return 0;
       }
       auto it = n.find(predecessor_list);
       if (it != n.end()) {
-        return it->second;
+        auto it2 = freq.find(predecessor_list);
+        return it->second - it2->second.size();
       } else {
         return 0;
       }
@@ -737,7 +788,11 @@ class Predictor<T, Depth, MethodB> {
   /// \brief returns PDF numerator
   unsigned_integer_t PDF(T value) const {
     if (escaping) {
-      return predictor.PDF(value);
+      if (escaping2) {
+        return predictor.PDF(value);
+      } else {
+        return 1;
+      }
     } else {
       if (predecessor_list.size() < Depth) {
         return 0;
@@ -748,7 +803,7 @@ class Predictor<T, Depth, MethodB> {
         if (it2 == it->second.end()) {
           return 0;
         } else {
-          return it2->second;
+          return it2->second - 1;
         }
       }
       return 0;
@@ -759,7 +814,24 @@ class Predictor<T, Depth, MethodB> {
   /// \brief returns CDF numerator
   unsigned_integer_t CDF(T value) const {
     if (escaping) {
-      return predictor.CDF(value);
+      if (escaping2) {
+        return predictor.CDF(value);
+      } else {
+        auto it = once.find(predecessor_list);
+        if (it != once.end()) {
+          unsigned_integer_t sum = 0;
+          for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+            if (*it2 < value) {
+              sum++;
+            } else {
+              break;
+            }
+          }
+          return sum;
+        } else {
+          return 0;
+        }
+      }
     } else {
       if (predecessor_list.size() < Depth) {
         return 0;
@@ -769,7 +841,7 @@ class Predictor<T, Depth, MethodB> {
         unsigned_integer_t sum = 0;
         for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
           if (it2->first < value) {
-            sum += it2->second;
+            sum += it2->second - 1;
           } else {
             break;
           }
@@ -780,12 +852,26 @@ class Predictor<T, Depth, MethodB> {
     }
   }
 
-
   /// \fn ICDF(unsigned_integer_t cum)
   /// \brief returns Inverse CDF
   T ICDF(unsigned_integer_t cum) const {
     if (escaping) {
-      return predictor.ICDF(cum);
+      if (escaping2) {
+        return predictor.ICDF(cum);
+      } else {
+        auto it = once.find(predecessor_list);
+        if (it != once.end()) {
+          unsigned_integer_t sum = 0;
+          for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+            sum++;
+            if (sum > cum) {
+              return *it2;
+            }
+          }
+        } else {
+          return 0;
+        }
+      }
     } else {
       if (predecessor_list.size() < Depth) {
         return T();
@@ -794,7 +880,7 @@ class Predictor<T, Depth, MethodB> {
       if (it != freq.end()) {
         unsigned_integer_t sum = 0;
         for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
-          sum += it2->second;
+          sum += it2->second - 1;
           if (sum > cum) {
             return it2->first;
           }
@@ -810,8 +896,10 @@ class Predictor<T, Depth, MethodB> {
     if (predecessor_list.size() == Depth) {
       if (freq[predecessor_list].find(value) == freq[predecessor_list].end()) {
         freq[predecessor_list][value] = 1;
+        once[predecessor_list].insert(value);
       } else {
         freq[predecessor_list][value]++;
+        once[predecessor_list].erase(value);
       }
       if (n.find(predecessor_list) == n.end()) {
         n[predecessor_list] = 1;
@@ -819,7 +907,7 @@ class Predictor<T, Depth, MethodB> {
         n[predecessor_list]++;
       }
     }
-    if (escaping) {
+    if (escaping && escaping2) {
       predictor.update_frequency(value);
     }
     predictor.update_sequence(value);

@@ -14,6 +14,7 @@ int main() {
     buffer[i] = rand_r(&seed) % 100;
   }
 
+#if 0
   auto&& ppma = ResearchLibrary::PredictionByPartialMatching
                                ::Encode<int, 2, MethodA>(buffer);
   auto&& ippma = ResearchLibrary::PredictionByPartialMatching
@@ -23,11 +24,12 @@ int main() {
       return 1;
     }
   }
+#endif
 
   auto&& ppmb = ResearchLibrary::PredictionByPartialMatching
-                               ::Encode<int, 0, MethodB>(buffer);
+                               ::Encode<int, 2, MethodB>(buffer);
   auto&& ippmb = ResearchLibrary::PredictionByPartialMatching
-                                ::Decode<int, 0, MethodB>(ppmb);
+                                ::Decode<int, 2, MethodB>(ppmb);
   for (size_t i = 0; i < ippmb.size(); i++) {
     if (ippmb[i] != buffer[i]) {
       return 1;
