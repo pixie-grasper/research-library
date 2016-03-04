@@ -20,21 +20,21 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 する事によって各種アルゴリズムを利用できるようになります。
 
 ## 何ができるの？
-現在までに
-
 - Burrows Wheeler Transform (using Larsson-Sadakane's Algorithm)
 - Move To Front
 - Range Coder (Static, Adaptive)
 - Fast Fourier Transform
 - Discrete Cosine Transform
 - Wavelet Transform (Haar, CDF 5/3, CDF 9/7)
+- Prediction by Partial Matching
 
-が実装されています。
+が既に実装されています。
 
 ## TODO
 以下のアルゴリズムを実装する予定です。
 
-- Prediction by Partial Matching
+- Elias Coding
+- Huffman Coding
 
 ## NOT TODO
 以下のアルゴリズムは宗教的な理由により実装*しない*予定です。
