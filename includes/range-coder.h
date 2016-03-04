@@ -75,7 +75,7 @@ struct EncoderContinuation {
 template <size_t N>
 auto encode_init() {
   EncoderContinuation<N> cont{};
-  cont.range = size_type_t<N>(UINT64_MAX);
+  cont.range--;
   return cont;
 }
 
@@ -149,13 +149,29 @@ auto decode_init(const std::vector<uint8_t>& data) {
 
 // adaptive frequency
 template <size_t N, typename T>
+auto decode_split(const DecoderContinuation<N, T>& cont,
+                  size_t border,
+                  size_t sum) {
+  if (border == sum) {
+    return false;
+  }
+  auto ch_in = idiv<N>(cont.data - cont.low, cont.range);
+  auto fixed_border = idiv<N>(border, sum);
+  if (fixed_border <= ch_in) {
+    return true;  // right
+  } else {
+    return false;
+  }
+}
+
+template <size_t N, typename T>
 auto decode_partial_fetch(const DecoderContinuation<N, T>& cont,
                           const std::vector<unsigned_integer_t>& freq,
                           size_t total_freq,
                           size_t sum) {
   auto ch_in_exact = idiv<N>(cont.data - cont.low, cont.range);
   auto ch_in = mulhi<N>(ch_in_exact, sum);
-  if (idiv<N>(total_freq, sum) < ch_in_exact) {
+  if (idiv<N>(total_freq, sum) <= ch_in_exact) {
     return std::make_pair(T(0), false);
   }
   size_t ch = 0, sum_freq = freq[0];
@@ -177,6 +193,11 @@ auto decode_fetch(const DecoderContinuation<N, T>& cont,
     sum_freq += freq[ch];
   }
   return T(ch);
+}
+
+template <size_t N, typename T>
+auto decode_fetch(const DecoderContinuation<N, T>& cont, size_t sum) {
+  return mulhi<N>(idiv<N>(cont.data - cont.low, cont.range), sum);
 }
 
 template <size_t N, typename T>
