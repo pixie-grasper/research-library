@@ -938,7 +938,7 @@ class Predictor<T, Depth, MethodB> {
 /// \param[in] data sequence
 /// \param[in] A data set
 /// \return encoded sequence as \c std::vector<uint8_t>
-template <typename T, int Depth, enum Method M>
+template <enum Method M, int Depth, typename T>
 auto Encode(const std::vector<T>& data, const std::set<T>& A) {
   Predictor<T, Depth, M> predictor(A);
   auto cont = RangeCoder::encode_init<unsigned_integer_size>();
@@ -966,13 +966,13 @@ auto Encode(const std::vector<T>& data, const std::set<T>& A) {
 /// \param[in] data sequence
 /// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
 ///         \c std::pair of data set and length of the original sequence
-template <typename T, int Depth, enum Method M>
+template <enum Method M, int Depth, typename T>
 auto Encode(const std::vector<T>& data) {
   std::set<T> set{};
   for (size_t i = 0; i < data.size(); i++) {
     set.insert(data[i]);
   }
-  return std::make_pair(Encode<T, Depth, M>(data, set),
+  return std::make_pair(Encode<M, Depth, T>(data, set),
          std::make_pair(set, data.size()));
 }
 
@@ -984,7 +984,7 @@ auto Encode(const std::vector<T>& data) {
 /// \param[in] A data set
 /// \param[in] original_size length of the original sequence
 /// \return data sequence as \c std::vector<T>
-template <typename T, int Depth, enum Method M>
+template <enum Method M, int Depth, typename T>
 auto Decode(const std::vector<uint8_t>& data,
             const std::set<T>& A,
             size_t original_size) {
@@ -1023,10 +1023,10 @@ auto Decode(const std::vector<uint8_t>& data,
 ///            and \c std::pair of data set as \c std::set<T> and
 ///            length of the original sequence
 /// \return data sequence as \c std::vector<T>
-template <typename T, int Depth, enum Method M>
+template <enum Method M, int Depth, typename T>
 auto Decode(const std::pair<std::vector<uint8_t>,
                   std::pair<std::set<T>, size_t>>& tuple) {
-  return Decode<T, Depth, M>(tuple.first,
+  return Decode<M, Depth, T>(tuple.first,
                              tuple.second.first,
                              tuple.second.second);
 }
