@@ -24,7 +24,7 @@ SYNTAX_CHECK:
 
 .PHONY: check
 check: $(EXES)
-	@for e in $(EXES); do ./$$e; if [ $$? -ne 0 ]; then echo "[test] [1;31mfailed. [0m $$e"; else echo "[test] [32msucceed.[0m $$e"; fi; done
+	@for e in $(EXES); do echo "[test] [36mtesting[0m  $$e[F"; ./$$e; if [ $$? -ne 0 ]; then echo "[test] [1;31mfailed. [0m $$e"; else echo "[test] [32msucceed.[0m $$e"; fi; done
 
 .PHONY: install
 install:
