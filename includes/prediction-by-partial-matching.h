@@ -1754,7 +1754,7 @@ auto Encode(const std::vector<T>& data) {
 template <enum Method M, int Depth, typename T>
 auto NumericEncode(const std::vector<T>& data, const T& max) {
   std::set<T> A{};
-  for (T i{}; i <= max; i++) {
+  for (T i{}; i <= max; ++i) {
     A.insert(i);
   }
   return std::make_pair(Encode<M, Depth, T>(data, A).first, data.size());
@@ -1846,7 +1846,7 @@ auto NumericDecode(const std::vector<uint8_t>& data,
                    const T& max,
                    size_t original_size) {
   std::set<T> A{};
-  for (T i{}; i <= max; i++) {
+  for (T i{}; i <= max; ++i) {
     A.insert(i);
   }
   return Decode<M, Depth, T>(data, A, original_size);
