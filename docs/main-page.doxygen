@@ -1,0 +1,55 @@
+/**
+
+\file main-page.doxygen
+\brief the Main Page of the document.
+\author pixie.grasper
+
+\mainpage Research Library Documentation
+
+\section Introduction 何これ？
+これは、色々なアルゴリズムを片っ端から実装するプロジェクトです。
+実装言語はC++14を用い、clangでコンパイルでき、追加のライブラリを必要とせず、
+MITライセンスで提供しています。
+
+\section HowToUse どう使うの？
+\code
+$ git clone https://github.com/pixie-grasper/research-library.git
+$ cd research-library
+$ make check
+$ sudo make install
+\endcode
+した後に
+\code
+$ clang++ `pkg-config --cflags libresearch` foo.cc
+\endcode
+する事によって各種アルゴリズムを利用できるようになります。
+
+例えば、
+\code
+#include <stdio.h>
+#include <stdint.h>
+#include <sys/stat.h>
+#include <prediction-by-partial-matching.h>
+#include <vector>
+
+int main() {
+  auto file_name = "1.dat";
+  struct stat fst{};
+  stat(file_name, &fst);
+  std::vector<uint8_t> buffer(fst.st_size);
+  auto f = fopen(file_name, "r");
+  fread(&buffer[0], sizeof(uint8_t), buffer.size(), f);
+  fclose(f);
+
+  auto ppm = ResearchLibrary::PredictionByPartialMatching::NumericEncode<MethodC, 4>(buffer);
+  printf("%zu -> %zu\n", buffer.size(), ppm.first.size());
+  return 0;
+}
+\endcode
+と書いて、
+\code
+$ clang++ `pkg-config --cflags libresearch` foo.cc -o foo
+\endcode
+すると、PPM法のMethod C, 深さ4による圧縮が行われます。
+
+*/

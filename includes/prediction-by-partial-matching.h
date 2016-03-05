@@ -1757,7 +1757,7 @@ auto NumericEncode(const std::vector<T>& data, const T& max) {
   for (T i{}; i <= max; ++i) {
     A.insert(i);
   }
-  return std::make_pair(Encode<M, Depth, T>(data, A).first, data.size());
+  return std::make_pair(Encode<M, Depth, T>(data, A), data.size());
 }
 
 /// \fn NumericEncode(const std::vector<T>& data)
