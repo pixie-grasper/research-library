@@ -1700,6 +1700,7 @@ class Predictor<T, Depth, MethodD> {
     return;
   }
 };
+
 /// \fn Encode(const std::vector<T>& data, const std::set<T>& A)
 /// \brief PPM Algorithm Encode Function
 /// \param[in] data sequence
@@ -1741,6 +1742,40 @@ auto Encode(const std::vector<T>& data) {
   }
   return std::make_pair(Encode<M, Depth, T>(data, set),
          std::make_pair(set, data.size()));
+}
+
+/// \fn NumericEncode(const std::vector<T>& data, const T& max)
+/// \brief PPM Algorithm Encode Function.
+///        Assumes data sequence are in [0, max].
+/// \param[in] data sequence
+/// \param[in] max minimum of supremum or maximum value of the sequence
+/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+///         length of the original sequence
+template <enum Method M, int Depth, typename T>
+auto NumericEncode(const std::vector<T>& data, const T& max) {
+  std::set<T> A{};
+  for (T i{}; i <= max; i++) {
+    A.insert(i);
+  }
+  return std::make_pair(Encode<M, Depth, T>(data, A).first, data.size());
+}
+
+/// \fn NumericEncode(const std::vector<T>& data)
+/// \brief PPM Algorithm Encode Function.
+///        Assumes data sequence has maximum value.
+/// \param[in] data sequence
+/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+///         \c std::pair of maximum value and length of the original sequence
+template <enum Method M, int Depth, typename T>
+auto NumericEncode(const std::vector<T>& data) {
+  T max = data[0];
+  for (size_t i = 0; i < data.size(); i++) {
+    if (max < data[i]) {
+      max = data[i];
+    }
+  }
+  auto&& encoded = NumericEncode<M, Depth, T>(data, max);
+  return std::make_pair(encoded.first, std::make_pair(max, data.size()));
 }
 
 /// \fn Decode(const std::vector<uint8_t>& data,
@@ -1796,6 +1831,52 @@ auto Decode(const std::pair<std::vector<uint8_t>,
   return Decode<M, Depth, T>(tuple.first,
                              tuple.second.first,
                              tuple.second.second);
+}
+
+/// \fn NumericDecode(const std::vector<uint8_t>& data,
+///                   const T& max,
+///                   size_t original_size)
+/// \brief PPM Algorithm Decode Function
+/// \param[in] data sequence
+/// \param[in] max minimum of supremum or maximum value of the original sequence
+/// \param[in] original_size length of the original sequence
+/// \return data sequence as \c std::vector<T>
+template <enum Method M, int Depth, typename T>
+auto NumericDecode(const std::vector<uint8_t>& data,
+                   const T& max,
+                   size_t original_size) {
+  std::set<T> A{};
+  for (T i{}; i <= max; i++) {
+    A.insert(i);
+  }
+  return Decode<M, Depth, T>(data, A, original_size);
+}
+
+/// \fn NumericDecode(const std::pair<std::vector<uint8_t>, size_t>& pair,
+///                   const T& max)
+/// \brief PPM Algorithm Decode Function
+/// \param[in] pair \c std::pair of data sequence and length of the original
+///            sequence
+/// \param[in] max minimum of supremum or maximum value of the original
+///            sequence
+/// \return data sequence as \c std::vector<T>
+template <enum Method M, int Depth, typename T>
+auto NumericDecode(const std::pair<std::vector<uint8_t>, size_t>& pair,
+                   const T& max) {
+  return NumericDecode(pair.first, max, pair.second);
+}
+
+/// \fn NumericDecode(const std::pair<std::vector<uint8_t>,
+///                         std::pair<T, size_t>>& tuple)
+/// \brief PPM Algorithm Decode Function
+/// \param[in] tuple \c std::pair of data sequence and
+///            \c std::pair of minimum of supremum or maximum value of the
+///            original sequence and length of the original sequence
+/// \return data sequence as \c std::vector<T>
+template <enum Method M, int Depth, typename T>
+auto NumericDecode(const std::pair<std::vector<uint8_t>,
+                         std::pair<T, size_t>>& tuple) {
+  return NumericDecode(tuple.first, tuple.second.first, tuple.second.second);
 }
 
 }  // namespace PredictionByPartialMatching
