@@ -28,7 +28,19 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 - Wavelet Transform (Haar, CDF 5/3, CDF 9/7)
 - Prediction by Partial Matching
 
-が既に実装されています。
+が既に実装されています。又、
+
+- size\_type\_t型: テンプレート引数としてコンパイル時に決定可能な整数の1, 2, 4, 8を許し、その大きさの符号なし整数型を表す
+- BitsToBytes class: ビットストリームをバイトストリームに変換する為のクラス
+- BytesToBits class: バイトストリームからビットストリームを切り出す為のクラス
+
+が利用できます。詳しい使い方に関しては
+
+```
+$ make docs
+```
+
+を行うことでdoxygenを利用して生成されるドキュメントを参照してください。
 
 ## TODO
 以下のアルゴリズムを実装する予定です。
