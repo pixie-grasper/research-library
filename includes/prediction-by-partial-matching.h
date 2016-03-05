@@ -1,6 +1,6 @@
 // Copyright 2015 pixie.grasper
 /// \file prediction-by-partial-matching.h
-/// \brief Implementation of the RangeCoder
+/// \brief Implementation of the Prediction by Partial Matching
 /// \author pixie.grasper
 
 #ifndef INCLUDES_PREDICTION_BY_PARTIAL_MATCHING_H_
