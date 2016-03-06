@@ -27,6 +27,9 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 - Discrete Cosine Transform
 - Wavelet Transform (Haar, CDF 5/3, CDF 9/7)
 - Prediction by Partial Matching
+- Unary Coding
+- Elias Coding
+- Golomb Coding
 
 が既に実装されています。又、
 
@@ -45,7 +48,6 @@ $ make docs
 ## TODO
 以下のアルゴリズムを実装する予定です。
 
-- Elias Coding
 - Huffman Coding
 
 ## NOT TODO
