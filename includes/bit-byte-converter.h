@@ -31,6 +31,10 @@ class BitsToBytes {
   size_t buffered_length;
   uint8_t buffered_bits;
 
+  size_type_t<N> mask(size_t n) {
+    return (size_type_t<N>(1) << n) - 1;
+  }
+
  public:
   BitsToBytes() = default;
 
@@ -39,10 +43,7 @@ class BitsToBytes {
   /// \param[in] value contains bit-stream
   /// \param[in] length length of the bit-stream
   void put(size_type_t<N> value, size_t length) {
-    std::map<size_t, size_type_t<N>> mask;
-    for (size_t i = 0; i < N * 8; i++) {
-      mask[i] = (size_type_t<N>(1) << i) - 1;
-    }
+    value &= mask(length);
     if (buffered_length + length >= 8) {
       // | <-   value  -> | <- buffered -> |
       // | <- rest -> | <-      8       -> |
@@ -55,7 +56,7 @@ class BitsToBytes {
         value >>= 8;
         buffered_length -= 8;
       }
-      buffered_bits = static_cast<uint8_t>(value & mask[buffered_length]);
+      buffered_bits = static_cast<uint8_t>(value & mask(buffered_length));
     } else {
       buffered_bits |= value << buffered_length;
       buffered_length += length;
@@ -63,10 +64,10 @@ class BitsToBytes {
     return;
   }
 
-  /// \fn fill_zero()
-  /// \brief aligns to byte-boundary with fill-zero
+  /// \fn seek_to_byte_boundary()
+  /// \brief seek to byte-boundary with fill-zero
   /// \return returns current buffer as \c std::vector<uint8_t>
-  std::vector<uint8_t>& fill_zero() {
+  std::vector<uint8_t>& seek_to_byte_boundary() {
     if (buffered_length != 0) {
       data.push_back(buffered_bits);
       buffered_bits = 0;
@@ -84,6 +85,10 @@ class BytesToBits {
   std::vector<uint8_t> buffer;
   size_t data_index, buffered_length;
   size_type_t<N> buffered_bits;
+
+  size_type_t<N> mask(size_t n) {
+    return (size_type_t<N>(1) << n) - 1;
+  }
 
  public:
   /// \fn BytesToBits(const std::vector<uint8_t>& data)
@@ -108,10 +113,6 @@ class BytesToBits {
   /// \fn get(size_t length)
   /// \brief get a value from the stream
   size_type_t<N> get(size_t length) {
-    std::map<size_t, size_type_t<N>> mask;
-    for (size_t i = 0; i < N * 8; i++) {
-      mask[i] = (size_type_t<N>(1) << i) - 1;
-    }
     if (length > buffered_length) {
       // | <- buffer -> | <- buffered bits -> |
       // | <- rest -> | <-      value      -> |
@@ -125,19 +126,51 @@ class BytesToBits {
         buffered_length += 8;
         data_index++;
       }
-      value |= (buffered_bits & mask[length]) << stored_length;
+      value |= (buffered_bits & mask(length)) << stored_length;
       buffered_bits >>= length;
       buffered_length -= length;
-      buffered_bits &= mask[buffered_length];
+      buffered_bits &= mask(buffered_length);
       return value;
     } else {
       // | <- 0 -> | <-   buffered bits    -> |
       // |         | <- rest -> | <- value -> |
-      auto value = buffered_bits & mask[buffered_length];
+      auto value = buffered_bits & mask(length);
       buffered_length -= length;
       buffered_bits >>= length;
       return value;
     }
+  }
+
+  /// \fn fetch(size_t length)
+  /// \brief fetch a value from the stream
+  size_type_t<N> fetch(size_t length) const {
+    if (length > buffered_length) {
+      auto value = buffered_bits;
+      auto stored_length = buffered_length;
+      length -= buffered_length;
+      auto index = data_index;
+      size_t extra_read_length = 0;
+      size_type_t<N> extra_buffer = 0;
+      while (length > extra_read_length) {
+        extra_buffer |= size_type_t<N>(buffer[index]) << extra_read_length;
+        extra_read_length += 8;
+        index++;
+      }
+      return value | (extra_buffer & mask(length)) << stored_length;
+    } else {
+      return buffered_bits & mask(length);
+    }
+  }
+
+  /// \fn seek_to_byte_boundary()
+  /// \brief seek to the byte-boundary
+  void seek_to_byte_boundary() {
+    if (buffered_length != 0) {
+      buffered_length = 0;
+      buffered_bits = 0;
+      data_index++;
+    }
+    return;
   }
 };
 

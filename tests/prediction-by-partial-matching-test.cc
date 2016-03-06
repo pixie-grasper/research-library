@@ -8,10 +8,10 @@
 #include "../includes/prediction-by-partial-matching.h"
 
 int main() {
-  std::vector<int> buffer(10000);
+  std::vector<int> buffer(1000);
   unsigned int seed = 10;
   for (size_t i = 0; i < buffer.size(); i++) {
-    buffer[i] = rand_r(&seed) % 256;
+    buffer[i] = rand_r(&seed) % 100;
   }
 
   auto&& ppma = ResearchLibrary::PredictionByPartialMatching

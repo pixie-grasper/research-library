@@ -9,7 +9,7 @@ int main() {
   for (size_t i = 0; i < N; i++) {
     conv.put(i, L);
   }
-  auto buffer = conv.fill_zero();
+  auto buffer = conv.seek_to_byte_boundary();
   ResearchLibrary::BytesToBits<8> iconv(buffer);
   for (size_t i = 0; i < N; i++) {
     auto v = iconv.get(L);
