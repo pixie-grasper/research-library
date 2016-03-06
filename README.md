@@ -21,15 +21,15 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 
 ## 何ができるの？
 - Burrows Wheeler Transform (using Larsson-Sadakane's Algorithm)
-- Move To Front
-- Range Coder (Static, Adaptive)
-- Fast Fourier Transform
 - Discrete Cosine Transform
-- Wavelet Transform (Haar, CDF 5/3, CDF 9/7)
-- Prediction by Partial Matching
-- Unary Coding
 - Elias Coding
+- Fast Fourier Transform
 - Golomb Coding
+- Move To Front
+- Prediction by Partial Matching
+- Range Coder (Static, Adaptive)
+- Unary Coding
+- Wavelet Transform (Haar, CDF 5/3, CDF 9/7)
 
 が既に実装されています。又、
 
