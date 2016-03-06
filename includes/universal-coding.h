@@ -181,7 +181,7 @@ auto DeltaCodingDecode(const std::vector<uint8_t>& data, size_t length) {
 /// \return decoded sequence
 template <typename T>
 auto DeltaCodingDecode(const std::pair<std::vector<uint8_t>,
-                              std::pair<size_t, T>>& tuple) {
+                             std::pair<size_t, T>>& tuple) {
   return DeltaCodingDecode<T>(tuple.first, tuple.second.first);
 }
 
@@ -246,7 +246,7 @@ auto OmegaCodingDecode(const std::vector<uint8_t>& data, size_t length) {
 /// \return decoded sequence
 template <typename T>
 auto OmegaCodingDecode(const std::pair<std::vector<uint8_t>,
-                              std::pair<size_t, T>>& tuple) {
+                             std::pair<size_t, T>>& tuple) {
   return OmegaCodingDecode<T>(tuple.first, tuple.second.first);
 }
 
@@ -310,8 +310,8 @@ auto GolombCodingEncode(const std::vector<T>& data, T m) {
 /// \return decoded sequence
 template <typename T>
 auto GolombCodingDecode(const std::vector<uint8_t>& data,
-                         const T& m,
-                         size_t length) {
+                        const T& m,
+                        size_t length) {
   std::vector<T> ret(length);
   BytesToBits<8> buffer(data);
   auto b = T(ceil(log2(m)));
@@ -353,8 +353,8 @@ auto GolombCodingDecode(const std::vector<uint8_t>& data,
 /// \return decoded sequence
 template <typename T>
 auto GolombCodingDecode(const std::pair<std::vector<uint8_t>,
-                               std::pair<size_t, T>>& tuple,
-                         const T& m) {
+                              std::pair<size_t, T>>& tuple,
+                        const T& m) {
   return GolombCodingDecode<T>(tuple.first, m, tuple.second.first);
 }
 

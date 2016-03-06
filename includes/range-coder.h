@@ -6,8 +6,6 @@
 #ifndef INCLUDES_RANGE_CODER_H_
 #define INCLUDES_RANGE_CODER_H_
 
-#include <stdint.h>
-
 /// \privatesection
 int gets();
 /// \publicsection

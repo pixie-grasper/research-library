@@ -6,7 +6,7 @@
 #ifndef INCLUDES_SIZE_TYPE_H_
 #define INCLUDES_SIZE_TYPE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <cstddef>
 
 /// \namespace ResearchLibrary
