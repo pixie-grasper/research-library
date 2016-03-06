@@ -25,7 +25,7 @@ namespace ResearchLibrary {
 namespace UniversalCoding {
 
 /// \fn UnaryCodingEncode(const std::vector<T>& data)
-/// \brief Unary Coding Encoder Function
+/// \brief Unary Coding Encode Function
 /// \param[in] data non-negative sequence
 /// \return \c std::pair of encoded sequence and
 ///         \c std::pair of length of the original sequence and sample
@@ -43,7 +43,7 @@ auto UnaryCodingEncode(const std::vector<T>& data) {
 }
 
 /// \fn UnaryCodingDecode(const std::vector<uint8_t>& data, size_t length)
-/// \brief Unary Coding Decoder Function
+/// \brief Unary Coding Decode Function
 /// \param[in] data sequence
 /// \param[in] length length of the original sequence
 /// \return original sequence as \c std::vector<T>
@@ -61,7 +61,7 @@ auto UnaryCodingDecode(const std::vector<uint8_t>& data, size_t length) {
 
 /// \fn UnaryCodingDecode(const std::pair<std::vector<uint8_t>,
 ///                             std::pair<size_t, T>>& pair)
-/// \brief Unary Coding Decoder Function
+/// \brief Unary Coding Decode Function
 /// \param[in] pair \c std::pair of data sequence and
 ///                 \c std::pair of length of the original sequence and
 ///                                 sample
@@ -73,7 +73,7 @@ auto UnaryCodingDecode(const std::pair<std::vector<uint8_t>,
 }
 
 /// \fn GammaCodingEncode(const std::vector<T>& data)
-/// \brief Gamma Coding Encoder Function
+/// \brief Gamma Coding Encode Function
 /// \param[in] data positive sequence
 /// \return \c std::pair of encoded sequence and
 ///         \c std::pair of length of the original sequence and sample
@@ -92,7 +92,7 @@ auto GammaCodingEncode(const std::vector<T>& data) {
 }
 
 /// \fn GammaCodingDecode(const std::vector<uint8_t>& data, size_t length)
-/// \brief Gamma Coding Decoder Function
+/// \brief Gamma Coding Decode Function
 /// \param[in] data sequence
 /// \param[in] length length of the original sequence
 /// \return decoded sequence
@@ -114,7 +114,7 @@ auto GammaCodingDecode(const std::vector<uint8_t>& data, size_t length) {
 
 /// \fn GammaCodingDecode(const std::pair<std::vector<uint8_t>,
 ///                             std::pair<size_t, T>>& tuple)
-/// \brief Gamma Coding Decoder Function
+/// \brief Gamma Coding Decode Function
 /// \param[in] tuple \c std::pair of data sequence as \c std::vector<uint8_t>
 ///            and \c std::pair of length of the original sequence and sample
 /// \return decoded sequence
@@ -124,13 +124,13 @@ auto GammaCodingDecode(const std::pair<std::vector<uint8_t>,
   return GammaCodingDecode<T>(tuple.first, tuple.second.first);
 }
 
-/// \fn DeltaCodingEncoder(const std::vector<T>& data)
-/// \brief Delta Coding Encoder Function
+/// \fn DeltaCodingEncode(const std::vector<T>& data)
+/// \brief Delta Coding Encode Function
 /// \param[in] data positive sequence
 /// \return \c std::pair of encoded sequence and \c std::pair of length of the
 ///         original sequence and sample
 template <typename T>
-auto DeltaCodingEncoder(const std::vector<T>& data) {
+auto DeltaCodingEncode(const std::vector<T>& data) {
   BitsToBytes<8> buffer{};
   for (size_t i = 0; i < data.size(); i++) {
     auto width =
@@ -149,13 +149,13 @@ auto DeltaCodingEncoder(const std::vector<T>& data) {
          std::make_pair(data.size(), T{}));
 }
 
-/// \fn DeltaCodingDecoder(const std::vector<uint8_t>& data, size_t length)
-/// \brief Delta Coding Decoder Function
+/// \fn DeltaCodingDecode(const std::vector<uint8_t>& data, size_t length)
+/// \brief Delta Coding Decode Function
 /// \param[in] data sequencee
 /// \param[in] length length of the original sequence
 /// \return decoded sequence
 template <typename T>
-auto DeltaCodingDecoder(const std::vector<uint8_t>& data, size_t length) {
+auto DeltaCodingDecode(const std::vector<uint8_t>& data, size_t length) {
   std::vector<T> ret(length);
   BytesToBits<8> buffer(data);
   for (size_t i = 0; i < length; i++) {
@@ -173,25 +173,25 @@ auto DeltaCodingDecoder(const std::vector<uint8_t>& data, size_t length) {
   return ret;
 }
 
-/// \fn DeltaCodingDecoder(const std::pair<std::vector<uint8_t>,
+/// \fn DeltaCodingDecode(const std::pair<std::vector<uint8_t>,
 ///                              std::pair<size_t, T>>& tuple)
-/// \brief Delta Coding Decoder Function
+/// \brief Delta Coding Decode Function
 /// \param[in] tuple \c std::pair of data sequence as \c std::vector<uint8_t>
 ///            and \c std::pair of length of the original sequence and sample
 /// \return decoded sequence
 template <typename T>
-auto DeltaCodingDecoder(const std::pair<std::vector<uint8_t>,
+auto DeltaCodingDecode(const std::pair<std::vector<uint8_t>,
                               std::pair<size_t, T>>& tuple) {
-  return DeltaCodingDecoder<T>(tuple.first, tuple.second.first);
+  return DeltaCodingDecode<T>(tuple.first, tuple.second.first);
 }
 
-/// \fn OmegaCodingEncoder(const std::vector<T>& data)
-/// \brief Omega Coding Encoder Function
+/// \fn OmegaCodingEncode(const std::vector<T>& data)
+/// \brief Omega Coding Encode Function
 /// \param[in] data positive sequence
 /// \return \c std::pair of encoded sequence and \c std::pair of length of the
 ///         original sequence and sample
 template <typename T>
-auto OmegaCodingEncoder(const std::vector<T>& data) {
+auto OmegaCodingEncode(const std::vector<T>& data) {
   BitsToBytes<8> buffer{};
   for (size_t i = 0; i < data.size(); i++) {
     std::vector<T> buffer2{0};
@@ -215,13 +215,13 @@ auto OmegaCodingEncoder(const std::vector<T>& data) {
          std::make_pair(data.size(), T{}));
 }
 
-/// \fn OmegaCodingDecoder(const std::vector<uint8_t>& data, size_t length)
-/// \brief Omega Coding Decoder Function
+/// \fn OmegaCodingDecode(const std::vector<uint8_t>& data, size_t length)
+/// \brief Omega Coding Decode Function
 /// \param[in] data sequence
 /// \param[in] length length of the original sequence
 /// \return decoded sequence
 template <typename T>
-auto OmegaCodingDecoder(const std::vector<uint8_t>& data, size_t length) {
+auto OmegaCodingDecode(const std::vector<uint8_t>& data, size_t length) {
   std::vector<T> ret(length);
   BytesToBits<8> buffer(data);
   for (size_t i = 0; i < length; i++) {
@@ -238,26 +238,26 @@ auto OmegaCodingDecoder(const std::vector<uint8_t>& data, size_t length) {
   return ret;
 }
 
-/// \fn OmegaCodingDecoder(const std::pair<std::vector<uint8_t>,
+/// \fn OmegaCodingDecode(const std::pair<std::vector<uint8_t>,
 ///                              std::pair<size_t, T>>& tuple)
-/// \brief Omega Coding Decoder Function
+/// \brief Omega Coding Decode Function
 /// \param[in] tuple \c std::pair of data sequence as \c std::vector<uint8_t>
 ///            and \c std::pair of length of the original sequence and sample
 /// \return decoded sequence
 template <typename T>
-auto OmegaCodingDecoder(const std::pair<std::vector<uint8_t>,
+auto OmegaCodingDecode(const std::pair<std::vector<uint8_t>,
                               std::pair<size_t, T>>& tuple) {
-  return OmegaCodingDecoder<T>(tuple.first, tuple.second.first);
+  return OmegaCodingDecode<T>(tuple.first, tuple.second.first);
 }
 
-/// \fn GolombCodingEncoder(const std::vector<T>& data, T m)
-/// \brief Golomb Coding Encoder Function
+/// \fn GolombCodingEncode(const std::vector<T>& data, T m)
+/// \brief Golomb Coding Encode Function
 /// \param[in] data non-negative sequence
 /// \param[in] m positive integer
 /// \return \c std::pair of encoded sequence and \c std::pair of length of the
 ///         original sequence and sample
 template <typename T>
-auto GolombCodingEncoder(const std::vector<T>& data, T m) {
+auto GolombCodingEncode(const std::vector<T>& data, T m) {
   BitsToBytes<8> buffer{};
   auto b = T(ceil(log2(m)));
   if ((m & (m - 1)) == 0) {
@@ -300,16 +300,16 @@ auto GolombCodingEncoder(const std::vector<T>& data, T m) {
          std::make_pair(data.size(), T{}));
 }
 
-/// \fn GolombCodingDecoder(const std::vector<uint8_t>& data,
+/// \fn GolombCodingDecode(const std::vector<uint8_t>& data,
 ///                         const T& m,
 ///                         size_t length)
-/// \brief Golomb Coding Decoder Function
+/// \brief Golomb Coding Decode Function
 /// \param[in] data sequence
 /// \param[in] m positive integer
 /// \param[in] length length of the original sequence
 /// \return decoded sequence
 template <typename T>
-auto GolombCodingDecoder(const std::vector<uint8_t>& data,
+auto GolombCodingDecode(const std::vector<uint8_t>& data,
                          const T& m,
                          size_t length) {
   std::vector<T> ret(length);
@@ -343,19 +343,19 @@ auto GolombCodingDecoder(const std::vector<uint8_t>& data,
   return ret;
 }
 
-/// \fn GolombCodingDecoder(const std::pair<std::vector<uint8_t>,
+/// \fn GolombCodingDecode(const std::pair<std::vector<uint8_t>,
 ///                               std::pair<size_t, T>>& tuple,
 ///                         const T& m)
-/// \brief Golomb Coding Decoder Function
+/// \brief Golomb Coding Decode Function
 /// \param[in] tuple \c std::pair of sequence and \c std::pair of length
 ///            of the original sequence and sample
 /// \param[in] m positive integer
 /// \return decoded sequence
 template <typename T>
-auto GolombCodingDecoder(const std::pair<std::vector<uint8_t>,
+auto GolombCodingDecode(const std::pair<std::vector<uint8_t>,
                                std::pair<size_t, T>>& tuple,
                          const T& m) {
-  return GolombCodingDecoder<T>(tuple.first, m, tuple.second.first);
+  return GolombCodingDecode<T>(tuple.first, m, tuple.second.first);
 }
 
 }  // namespace UniversalCoding

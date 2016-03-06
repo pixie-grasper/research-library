@@ -30,16 +30,16 @@ int main() {
     }
   }
 
-  auto&& delta = ResearchLibrary::UniversalCoding::DeltaCodingEncoder(buffer);
-  auto&& idelta = ResearchLibrary::UniversalCoding::DeltaCodingDecoder(delta);
+  auto&& delta = ResearchLibrary::UniversalCoding::DeltaCodingEncode(buffer);
+  auto&& idelta = ResearchLibrary::UniversalCoding::DeltaCodingDecode(delta);
   for (size_t i = 0; i < buffer.size(); i++) {
     if (idelta[i] != buffer[i]) {
       return 1;
     }
   }
 
-  auto&& omega = ResearchLibrary::UniversalCoding::OmegaCodingEncoder(buffer);
-  auto&& iomega = ResearchLibrary::UniversalCoding::OmegaCodingDecoder(omega);
+  auto&& omega = ResearchLibrary::UniversalCoding::OmegaCodingEncode(buffer);
+  auto&& iomega = ResearchLibrary::UniversalCoding::OmegaCodingDecode(omega);
   for (size_t i = 0; i < buffer.size(); i++) {
     if (iomega[i] != buffer[i]) {
       return 1;
@@ -47,9 +47,9 @@ int main() {
   }
 
   auto&& golomb = ResearchLibrary::UniversalCoding
-                                 ::GolombCodingEncoder(buffer, 6);
+                                 ::GolombCodingEncode(buffer, 6);
   auto&& igolomb = ResearchLibrary::UniversalCoding
-                                  ::GolombCodingDecoder(golomb, 6);
+                                  ::GolombCodingDecode(golomb, 6);
   for (size_t i = 0; i < buffer.size(); i++) {
     if (igolomb[i] != buffer[i]) {
       return 1;
