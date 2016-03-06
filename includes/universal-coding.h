@@ -1,6 +1,6 @@
 // Copyright 2015 pixie.grasper
 /// \file range-coder.h
-/// \brief Implementation of the RangeCoder
+/// \brief Implementation of the Universal Coding
 /// \author pixie.grasper
 
 #ifndef INCLUDES_UNIVERSAL_CODING_H_
