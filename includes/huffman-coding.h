@@ -154,7 +154,7 @@ struct HuffmanNode {
 /// \param[in] code_map code-map as \c std::map<T, std::pair<unsigned_integer_t,
 ///            unsigned_integer_t>> that maps to \c std::pair of length of the
 ///            code and the code.
-/// \return encoded sequence as std::vector<uint8_t>
+/// \return encoded sequence as std::vector<std::uint8_t>
 template <typename T>
 auto Encode(const std::vector<T>& data,
             const std::map<T, std::pair<unsigned_integer_t,
@@ -177,7 +177,7 @@ auto Encode(const std::vector<T>& data,
 /// \fn Encode(const std::vector<T>& data)
 /// \brief Huffman Coding Encode Function
 /// \param[in] data sequence
-/// \return \c std::pair of encoded sequence as std::vector<uint8_t> and
+/// \return \c std::pair of encoded sequence as std::vector<std::uint8_t> and
 ///         \c std::pair of length of the original sequence and
 ///         \c std::map<T,std::pair<unsigned_integer_t,unsigned_integer_t>>
 ///         that maps to \c std::pair of length of the code and the code
@@ -243,7 +243,7 @@ auto Encode(const std::vector<T>& data) {
 ///        assume that every data is non-negative number
 /// \param[in] data sequence
 /// \param[in] length_map character maps to code length
-/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of encoded sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of length of the original sequence and
 ///         code-map as \c std::map<T, std::pair<unsigned_integer_t,
 ///         unsigned_integer_t>> that maps to \c std::pair of length of the
@@ -260,7 +260,7 @@ auto NumericEncode(const std::vector<T>& data,
 /// \brief Huffman Coding Encode Function;
 ///        assume that every data is non-negative-number
 /// \param[in] data sequence
-/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of encoded sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of length of the original sequence and
 ///         length map as \c std::map<T,unsigned_integer_t>
 template <typename T>
@@ -308,13 +308,13 @@ auto NumericEncode(const std::vector<T>& data) {
          std::make_pair(data.size(), length_map));
 }
 
-/// \fn Decode(const std::vector<uint8_t>& data,
+/// \fn Decode(const std::vector<std::uint8_t>& data,
 ///            std::size_t length,
 ///            const std::map<T, std::pair<unsigned_integer_t,
 ///                                        unsigned_integer_t>>& code_map)
 /// \brief Huffman Coding Decode Function
 template <typename T>
-auto Decode(const std::vector<uint8_t>& data,
+auto Decode(const std::vector<std::uint8_t>& data,
             std::size_t length,
             const std::map<T, std::pair<unsigned_integer_t,
                                         unsigned_integer_t>>& code_map) {
@@ -339,37 +339,37 @@ auto Decode(const std::vector<uint8_t>& data,
   return ret;
 }
 
-/// \fn Decode(const std::vector<uint8_t>& data,
+/// \fn Decode(const std::vector<std::uint8_t>& data,
 ///            std::size_t length,
 ///            const std::map<T, unsigned_integer_t>& length_map)
 /// \brief Huffman Coding Decode Function
 template <typename T>
-auto Decode(const std::vector<uint8_t>& data,
+auto Decode(const std::vector<std::uint8_t>& data,
             std::size_t length,
             const std::map<T, unsigned_integer_t>& length_map) {
   auto&& code_map = length_map_to_code_map(length_map);
   return Decode(data, length, code_map);
 }
 
-/// \fn Decode(const std::pair<std::vector<uint8_t>,
+/// \fn Decode(const std::pair<std::vector<std::uint8_t>,
 ///                  std::pair<std::size_t,
 ///                  std::map<T, std::pair<unsigned_integer_t,
 ///                                        unsigned_integer_t>>>>& tuple)
 /// \brief Huffman Coding Decode Function
 template <typename T>
-auto Decode(const std::pair<std::vector<uint8_t>,
+auto Decode(const std::pair<std::vector<std::uint8_t>,
                   std::pair<std::size_t,
                   std::map<T, std::pair<unsigned_integer_t,
                                         unsigned_integer_t>>>>& tuple) {
   return Decode(tuple.first, tuple.second.first, tuple.second.second);
 }
 
-/// \fn Decode(const std::pair<std::vector<uint8_t>,
+/// \fn Decode(const std::pair<std::vector<std::uint8_t>,
 ///                  std::pair<std::size_t,
 ///                  std::map<T, unsigned_integer_t>>>& tuple)
 /// \brief Huffman Coding Decode Funciotn
 template <typename T>
-auto Decode(const std::pair<std::vector<uint8_t>,
+auto Decode(const std::pair<std::vector<std::uint8_t>,
                   std::pair<std::size_t,
                   std::map<T, unsigned_integer_t>>>& tuple) {
   return Decode(tuple.first, tuple.second.first, tuple.second.second);
