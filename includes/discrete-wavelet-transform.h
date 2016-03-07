@@ -6,6 +6,7 @@
 #ifndef INCLUDES_DISCRETE_WAVELET_TRANSFORM_H_
 #define INCLUDES_DISCRETE_WAVELET_TRANSFORM_H_
 
+#include <cstddef>
 #include <vector>
 #include <utility>
 
@@ -23,7 +24,7 @@ template <typename T>
 auto Haar(const std::vector<T>& data) {
   auto N = data.size() / 2;
   std::vector<T> approxim(N), detail(N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     approxim[i] = data[2 * i] + data[2 * i + 1];
     detail[i]   = data[2 * i] - data[2 * i + 1];
   }
@@ -39,7 +40,7 @@ template <typename T>
 auto IHaar(const std::vector<T>& approxim, const std::vector<T>& detail) {
   auto N = approxim.size();
   std::vector<T> ret(2 * N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     ret[2 * i] = (approxim[i] + detail[i]) / 2;
     ret[2 * i + 1] = (approxim[i] - detail[i]) / 2;
   }
@@ -66,14 +67,14 @@ auto CDF53(const std::vector<T>& data) {
   constexpr auto b = 0.25;
   auto N = data.size() / 2;
   std::vector<T> even(N), odd(N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] = data[2 * i];
     odd[i] = data[2 * i + 1];
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     odd[i] += a * (even[i] + even[(i + 1) % N]);
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] += b * (odd[i] + odd[(i - 1 + N) % N]);
   }
   return std::make_pair(std::move(even), std::move(odd));
@@ -90,18 +91,18 @@ auto ICDF53(const std::vector<T>& approxim, const std::vector<T>& detail) {
   constexpr auto b = 0.25;
   auto N = approxim.size();
   std::vector<T> even(N), odd(N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] = approxim[i];
     odd[i] = detail[i];
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] -= b * (odd[i] + odd[(i - 1 + N) % N]);
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     odd[i] -= a * (even[i] + even[(i + 1) % N]);
   }
   std::vector<T> ret(2 * N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     ret[2 * i] = even[i];
     ret[2 * i + 1] = odd[i];
   }
@@ -130,20 +131,20 @@ auto CDF97(const std::vector<T>& data) {
   constexpr auto d = 0.4435068520511142;
   auto N = data.size() / 2;
   std::vector<T> even(N), odd(N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] = data[2 * i];
     odd[i] = data[2 * i + 1];
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     odd[i] += a * (even[i] + even[(i + 1) % N]);
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] += b * (odd[i] + odd[(i - 1 + N) % N]);
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     odd[i] += c * (even[i] + even[(i + 1) % N]);
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] += d * (odd[i] + odd[(i - 1 + N) % N]);
   }
   return std::make_pair(std::move(even), std::move(odd));
@@ -162,24 +163,24 @@ auto ICDF97(const std::vector<T>& approxim, const std::vector<T>& detail) {
   constexpr auto d = 0.4435068520511142;
   auto N = approxim.size();
   std::vector<T> even(N), odd(N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] = approxim[i];
     odd[i] = detail[i];
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] -= d * (odd[i] + odd[(i - 1 + N) % N]);
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     odd[i] -= c * (even[i] + even[(i + 1) % N]);
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     even[i] -= b * (odd[i] + odd[(i - 1 + N) % N]);
   }
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     odd[i] -= a * (even[i] + even[(i + 1) % N]);
   }
   std::vector<T> ret(2 * N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     ret[2 * i] = even[i];
     ret[2 * i + 1] = odd[i];
   }

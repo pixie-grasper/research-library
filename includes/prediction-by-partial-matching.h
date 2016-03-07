@@ -9,6 +9,7 @@
 /// \privatesection
 int gets();
 /// \publicsection
+#include <cstdint>
 #include <vector>
 #include <map>
 #include <set>
@@ -47,7 +48,7 @@ class Predictor<T, 0, MethodA> {
  private:
   std::map<T, unsigned_integer_t> freq;
   const std::set<T> A;
-  size_t n;
+  std::size_t n;
   bool escaping;
   // | <- detected -> | <- not detected -> |
   // | <-    n     -> | <-      1       -> |
@@ -214,7 +215,7 @@ class Predictor<T, Depth, MethodA> {
   std::map<std::list<T>, std::map<T, unsigned_integer_t>> freq;
   std::list<T> predecessor_list;
   const std::set<T> A;
-  std::map<std::list<T>, size_t> n;
+  std::map<std::list<T>, std::size_t> n;
   bool escaping;
 
  public:
@@ -425,7 +426,7 @@ class Predictor<T, 0, MethodB> {
   std::map<T, unsigned_integer_t> freq;
   std::set<T> once;
   const std::set<T> A;
-  size_t n;
+  std::size_t n;
   bool escaping, escaping2;
   // | <- detected -> | <- not detected -> |
   // |   | <- once -> |                    |
@@ -645,7 +646,7 @@ class Predictor<T, Depth, MethodB> {
   std::map<std::list<T>, std::set<T>> once;
   std::list<T> predecessor_list;
   const std::set<T> A;
-  std::map<std::list<T>, size_t> n;
+  std::map<std::list<T>, std::size_t> n;
   bool escaping, escaping2;
 
  public:
@@ -731,7 +732,7 @@ class Predictor<T, Depth, MethodB> {
         if (predecessor_list.size() < Depth) {
           return 1;
         }
-        size_t s1 = 0, s2 = 0;
+        std::size_t s1 = 0, s2 = 0;
         auto it = freq.find(predecessor_list);
         if (it != freq.end()) {
           s1 = it->second.size();
@@ -942,7 +943,7 @@ class Predictor<T, 0, MethodC> {
  private:
   std::map<T, unsigned_integer_t> freq;
   const std::set<T> A;
-  size_t n;
+  std::size_t n;
   bool escaping;
   // | <- detected -> | <- not detected -> |
   // | <-    n     -> | <-      u       -> |
@@ -1113,7 +1114,7 @@ class Predictor<T, Depth, MethodC> {
   std::map<std::list<T>, std::map<T, unsigned_integer_t>> freq;
   std::list<T> predecessor_list;
   const std::set<T> A;
-  std::map<std::list<T>, size_t> n;
+  std::map<std::list<T>, std::size_t> n;
   bool escaping;
 
  public:
@@ -1324,7 +1325,7 @@ class Predictor<T, 0, MethodD> {
  private:
   std::map<T, unsigned_integer_t> freq;
   const std::set<T> A;
-  size_t n;
+  std::size_t n;
   bool escaping;
   // | <- detected  -> | <- not detected -> |
   // | <- 2 * n - u -> | <-      u       -> |
@@ -1495,7 +1496,7 @@ class Predictor<T, Depth, MethodD> {
   std::map<std::list<T>, std::map<T, unsigned_integer_t>> freq;
   std::list<T> predecessor_list;
   const std::set<T> A;
-  std::map<std::list<T>, size_t> n;
+  std::map<std::list<T>, std::size_t> n;
   bool escaping;
 
  public:
@@ -1703,12 +1704,12 @@ class Predictor<T, Depth, MethodD> {
 /// \brief PPM Algorithm Encode Function
 /// \param[in] data sequence
 /// \param[in] A data set
-/// \return encoded sequence as \c std::vector<uint8_t>
+/// \return encoded sequence as \c std::vector<std::uint8_t>
 template <enum Method M, int Depth, typename T>
 auto Encode(const std::vector<T>& data, const std::set<T>& A) {
   Predictor<T, Depth, M> predictor(A);
   auto cont = RangeCoder::encode_init<unsigned_integer_size>();
-  for (size_t i = 0; i < data.size(); i++) {
+  for (std::size_t i = 0; i < data.size(); i++) {
     while (predictor.has_to_escape(data[i])) {
       auto n = predictor.numerator();
       auto d = predictor.denominator();
@@ -1730,12 +1731,12 @@ auto Encode(const std::vector<T>& data, const std::set<T>& A) {
 /// \fn Encode(const std::vector<T>& data)
 /// \brief PPM Algorithm Encode Function
 /// \param[in] data sequence
-/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of encoded sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of data set and length of the original sequence
 template <enum Method M, int Depth, typename T>
 auto Encode(const std::vector<T>& data) {
   std::set<T> set{};
-  for (size_t i = 0; i < data.size(); i++) {
+  for (std::size_t i = 0; i < data.size(); i++) {
     set.insert(data[i]);
   }
   return std::make_pair(Encode<M, Depth, T>(data, set),
@@ -1747,7 +1748,7 @@ auto Encode(const std::vector<T>& data) {
 ///        Assumes data sequence are in [0, max].
 /// \param[in] data sequence
 /// \param[in] max minimum of supremum or maximum value of the sequence
-/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of encoded sequence as \c std::vector<std::uint8_t> and
 ///         length of the original sequence
 template <enum Method M, int Depth, typename T>
 auto NumericEncode(const std::vector<T>& data, const T& max) {
@@ -1762,12 +1763,12 @@ auto NumericEncode(const std::vector<T>& data, const T& max) {
 /// \brief PPM Algorithm Encode Function.
 ///        Assumes data sequence has maximum value.
 /// \param[in] data sequence
-/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of encoded sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of maximum value and length of the original sequence
 template <enum Method M, int Depth, typename T>
 auto NumericEncode(const std::vector<T>& data) {
   T max = data[0];
-  for (size_t i = 0; i < data.size(); i++) {
+  for (std::size_t i = 0; i < data.size(); i++) {
     if (max < data[i]) {
       max = data[i];
     }
@@ -1776,22 +1777,22 @@ auto NumericEncode(const std::vector<T>& data) {
   return std::make_pair(encoded.first, std::make_pair(max, data.size()));
 }
 
-/// \fn Decode(const std::vector<uint8_t>& data,
+/// \fn Decode(const std::vector<std::uint8_t>& data,
 ///            const std::set<T>& A,
-///            size_t original_size)
+///            std::size_t original_size)
 /// \brief PPM Algorithm Decode Function
 /// \param[in] data sequence
 /// \param[in] A data set
 /// \param[in] original_size length of the original sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto Decode(const std::vector<uint8_t>& data,
+auto Decode(const std::vector<std::uint8_t>& data,
             const std::set<T>& A,
-            size_t original_size) {
+            std::size_t original_size) {
   Predictor<T, Depth, M> predictor(A);
   std::vector<T> ret{};
   auto cont = RangeCoder::decode_init<unsigned_integer_size, T>(data);
-  for (size_t i = 0; i < original_size; i++) {
+  for (std::size_t i = 0; i < original_size; i++) {
     while (RangeCoder::decode_split(cont,
                                     predictor.numerator(),
                                     predictor.denominator())) {
@@ -1816,33 +1817,33 @@ auto Decode(const std::vector<uint8_t>& data,
   return ret;
 }
 
-/// \fn Decode(const std::pair<std::vector<uint8_t>,
-///                  std::pair<std::set<T>, size_t>>& tuple)
+/// \fn Decode(const std::pair<std::vector<std::uint8_t>,
+///                  std::pair<std::set<T>, std::size_t>>& tuple)
 /// \brief PPM Algorithm Decode Function
-/// \param[in] tuple \c std::pair of data sequence as \c std::vector<uint8_t>
-///            and \c std::pair of data set as \c std::set<T> and
-///            length of the original sequence
+/// \param[in] tuple \c std::pair of data sequence as
+///            \c std::vector<std::uint8_t> and \c std::pair of data set as
+///            \c std::set<T> and length of the original sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto Decode(const std::pair<std::vector<uint8_t>,
-                  std::pair<std::set<T>, size_t>>& tuple) {
+auto Decode(const std::pair<std::vector<std::uint8_t>,
+                  std::pair<std::set<T>, std::size_t>>& tuple) {
   return Decode<M, Depth, T>(tuple.first,
                              tuple.second.first,
                              tuple.second.second);
 }
 
-/// \fn NumericDecode(const std::vector<uint8_t>& data,
+/// \fn NumericDecode(const std::vector<std::uint8_t>& data,
 ///                   const T& max,
-///                   size_t original_size)
+///                   std::size_t original_size)
 /// \brief PPM Algorithm Decode Function
 /// \param[in] data sequence
 /// \param[in] max minimum of supremum or maximum value of the original sequence
 /// \param[in] original_size length of the original sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto NumericDecode(const std::vector<uint8_t>& data,
+auto NumericDecode(const std::vector<std::uint8_t>& data,
                    const T& max,
-                   size_t original_size) {
+                   std::size_t original_size) {
   std::set<T> A{};
   for (T i{}; i <= max; ++i) {
     A.insert(i);
@@ -1850,7 +1851,8 @@ auto NumericDecode(const std::vector<uint8_t>& data,
   return Decode<M, Depth, T>(data, A, original_size);
 }
 
-/// \fn NumericDecode(const std::pair<std::vector<uint8_t>, size_t>& pair,
+/// \fn NumericDecode(const std::pair<std::vector<std::uint8_t>,
+///                                   std::size_t>& pair,
 ///                   const T& max)
 /// \brief PPM Algorithm Decode Function
 /// \param[in] pair \c std::pair of data sequence and length of the original
@@ -1859,21 +1861,22 @@ auto NumericDecode(const std::vector<uint8_t>& data,
 ///            sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto NumericDecode(const std::pair<std::vector<uint8_t>, size_t>& pair,
+auto NumericDecode(const std::pair<std::vector<std::uint8_t>,
+                                   std::size_t>& pair,
                    const T& max) {
   return NumericDecode(pair.first, max, pair.second);
 }
 
-/// \fn NumericDecode(const std::pair<std::vector<uint8_t>,
-///                         std::pair<T, size_t>>& tuple)
+/// \fn NumericDecode(const std::pair<std::vector<std::uint8_t>,
+///                         std::pair<T, std::size_t>>& tuple)
 /// \brief PPM Algorithm Decode Function
 /// \param[in] tuple \c std::pair of data sequence and
 ///            \c std::pair of minimum of supremum or maximum value of the
 ///            original sequence and length of the original sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto NumericDecode(const std::pair<std::vector<uint8_t>,
-                         std::pair<T, size_t>>& tuple) {
+auto NumericDecode(const std::pair<std::vector<std::uint8_t>,
+                         std::pair<T, std::size_t>>& tuple) {
   return NumericDecode(tuple.first, tuple.second.first, tuple.second.second);
 }
 
