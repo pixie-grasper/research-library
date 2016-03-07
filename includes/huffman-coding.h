@@ -57,7 +57,7 @@ auto make_heap_for_huffman_coding(std::vector<T>&& heap,
 
 template <typename T>
 auto length_map_to_code_map(const std::map<T, unsigned_integer_t>& length_map) {
-  size_t max_length = 0;
+  std::size_t max_length = 0;
   for (auto it = length_map.begin(); it != length_map.end(); ++it) {
     if (max_length < it->second) {
       max_length = it->second;
@@ -86,8 +86,8 @@ auto length_map_to_code_map(const std::map<T, unsigned_integer_t>& length_map) {
   return code_map;
 }
 
-template <size_t N>
-size_type_t<N> mask(size_t n) {
+template <std::size_t N>
+size_type_t<N> mask(std::size_t n) {
   return (size_type_t<N>(1) << n) - 1;
 }
 
@@ -160,7 +160,7 @@ auto Encode(const std::vector<T>& data,
             const std::map<T, std::pair<unsigned_integer_t,
                                         unsigned_integer_t>>& code_map) {
   BitsToBytes<8> buffer{};
-  for (size_t i = 0; i < data.size(); i++) {
+  for (std::size_t i = 0; i < data.size(); i++) {
     auto it = code_map.find(data[i]);
     if (it == code_map.end()) {
       fprintf(stderr, "word not in the dictionary.\n");
@@ -185,7 +185,7 @@ template <typename T>
 auto Encode(const std::vector<T>& data) {
   // calculate frequency-map
   std::map<T, unsigned_integer_t> frequency_map;
-  for (size_t i = 0; i < data.size(); i++) {
+  for (std::size_t i = 0; i < data.size(); i++) {
     frequency_map[data[i]]++;
   }
 
@@ -266,20 +266,20 @@ auto NumericEncode(const std::vector<T>& data,
 template <typename T>
 auto NumericEncode(const std::vector<T>& data) {
   auto max = data[0];
-  for (size_t i = 1; i < data.size(); i++) {
+  for (std::size_t i = 1; i < data.size(); i++) {
     if (max < data[i]) {
       max = data[i];
     }
   }
-  auto N = size_t(max) + 1;
+  auto N = std::size_t(max) + 1;
   std::vector<unsigned_integer_t> freq_array(N * 2);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     freq_array[i] = N + i;
   }
-  for (size_t i = 0; i < data.size(); i++) {
-    freq_array[size_t(data[i]) + N]++;
+  for (std::size_t i = 0; i < data.size(); i++) {
+    freq_array[std::size_t(data[i]) + N]++;
   }
-  for (size_t i = (N - 1) / 2; i + 1 >= 1; i--) {
+  for (std::size_t i = (N - 1) / 2; i + 1 >= 1; i--) {
     freq_array = make_heap_for_huffman_coding(std::move(freq_array), i, N);
   }
 
@@ -296,12 +296,12 @@ auto NumericEncode(const std::vector<T>& data) {
   }
 
   freq_array[1] = 0;
-  for (size_t i = 3; i < freq_array.size(); i++) {
+  for (std::size_t i = 3; i < freq_array.size(); i++) {
     freq_array[i] = freq_array[freq_array[i]] + 1;
   }
 
   std::map<T, unsigned_integer_t> length_map{};
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     length_map[T(i)] = freq_array[N + i];
   }
   return std::make_pair(NumericEncode(data, length_map).first,
@@ -309,13 +309,13 @@ auto NumericEncode(const std::vector<T>& data) {
 }
 
 /// \fn Decode(const std::vector<uint8_t>& data,
-///            size_t length,
+///            std::size_t length,
 ///            const std::map<T, std::pair<unsigned_integer_t,
 ///                                        unsigned_integer_t>>& code_map)
 /// \brief Huffman Coding Decode Function
 template <typename T>
 auto Decode(const std::vector<uint8_t>& data,
-            size_t length,
+            std::size_t length,
             const std::map<T, std::pair<unsigned_integer_t,
                                         unsigned_integer_t>>& code_map) {
   auto root = std::make_shared<HuffmanNode<T>>();
@@ -324,7 +324,7 @@ auto Decode(const std::vector<uint8_t>& data,
   }
   BytesToBits<8> buffer(data);
   std::vector<T> ret(length);
-  for (size_t i = 0; i < length; i++) {
+  for (std::size_t i = 0; i < length; i++) {
     auto current_node = root;
     while (current_node->is_node()) {
       auto bit = buffer.get(1);
@@ -340,36 +340,37 @@ auto Decode(const std::vector<uint8_t>& data,
 }
 
 /// \fn Decode(const std::vector<uint8_t>& data,
-///            size_t length,
+///            std::size_t length,
 ///            const std::map<T, unsigned_integer_t>& length_map)
 /// \brief Huffman Coding Decode Function
 template <typename T>
 auto Decode(const std::vector<uint8_t>& data,
-            size_t length,
+            std::size_t length,
             const std::map<T, unsigned_integer_t>& length_map) {
   auto&& code_map = length_map_to_code_map(length_map);
   return Decode(data, length, code_map);
 }
 
 /// \fn Decode(const std::pair<std::vector<uint8_t>,
-///                  std::pair<size_t,
+///                  std::pair<std::size_t,
 ///                  std::map<T, std::pair<unsigned_integer_t,
 ///                                        unsigned_integer_t>>>>& tuple)
 /// \brief Huffman Coding Decode Function
 template <typename T>
 auto Decode(const std::pair<std::vector<uint8_t>,
-                  std::pair<size_t,
+                  std::pair<std::size_t,
                   std::map<T, std::pair<unsigned_integer_t,
                                         unsigned_integer_t>>>>& tuple) {
   return Decode(tuple.first, tuple.second.first, tuple.second.second);
 }
 
 /// \fn Decode(const std::pair<std::vector<uint8_t>,
-///                  std::pair<size_t, std::map<T, unsigned_integer_t>>>& tuple)
+///                  std::pair<std::size_t,
+///                  std::map<T, unsigned_integer_t>>>& tuple)
 /// \brief Huffman Coding Decode Funciotn
 template <typename T>
 auto Decode(const std::pair<std::vector<uint8_t>,
-                  std::pair<size_t,
+                  std::pair<std::size_t,
                   std::map<T, unsigned_integer_t>>>& tuple) {
   return Decode(tuple.first, tuple.second.first, tuple.second.second);
 }
