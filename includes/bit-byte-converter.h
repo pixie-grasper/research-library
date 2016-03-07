@@ -64,6 +64,17 @@ class BitsToBytes {
     return;
   }
 
+  /// \fn rput(size_type_t<N> value, size_t length)
+  /// \brief put a reversed bits to the stream
+  /// \param[in] value contains bit-stream
+  /// \param[in] length length of the bit-stream
+  void rput(size_type_t<N> value, size_t length) {
+    for (size_t i = 1; i <= length; i++) {
+      put(value >> (length - i), 1);
+    }
+    return;
+  }
+
   /// \fn seek_to_byte_boundary()
   /// \brief seek to byte-boundary with fill-zero
   /// \return returns current buffer as \c std::vector<uint8_t>
@@ -160,6 +171,25 @@ class BytesToBits {
     } else {
       return buffered_bits & mask(length);
     }
+  }
+
+  /// \fn rget(size_t length)
+  /// \brief get a reversed value from the stream
+  size_type_t<N> rget(size_t length) {
+    size_type_t<N> ret = 0;
+    for (size_t i = 0; i < length; i++) {
+      ret = (ret << 1) | get(1);
+    }
+    return ret;
+  }
+
+  /// \fn rget(size_t length, size_type_t<N> upper_bits)
+  /// \brief get a reversed value from the stream
+  size_type_t<N> rget(size_t length, size_type_t<N> upper_bits) {
+    for (size_t i = 0; i < length; i++) {
+      upper_bits = (upper_bits << 1) | get(1);
+    }
+    return upper_bits;
   }
 
   /// \fn seek_to_byte_boundary()

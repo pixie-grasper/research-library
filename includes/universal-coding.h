@@ -83,9 +83,7 @@ auto GammaCodingEncode(const std::vector<T>& data) {
   for (size_t i = 0; i < data.size(); i++) {
     auto width = static_cast<unsigned_integer_t>(floor(log2(data[i])) + 1);
     buffer.put(0, width - 1);
-    for (unsigned_integer_t j = 1; j <= width; j++) {
-      buffer.put(static_cast<size_type_t<8>>(data[i]) >> (width - j), 1);
-    }
+    buffer.rput(size_type_t<8>(data[i]), width);
   }
   return std::make_pair(buffer.seek_to_byte_boundary(),
          std::make_pair(data.size(), T{}));
@@ -103,11 +101,7 @@ auto GammaCodingDecode(const std::vector<uint8_t>& data, size_t length) {
   for (size_t i = 0; i < length; i++) {
     unsigned_integer_t width = 0;
     for (; buffer.get(1) != 1; width++) {}
-    T value = 1;
-    for (; width != 0; width--) {
-      value = (value << 1) + T(buffer.get(1));
-    }
-    ret[i] = value;
+    ret[i] = T(buffer.rget(width, 1));
   }
   return ret;
 }
@@ -138,12 +132,8 @@ auto DeltaCodingEncode(const std::vector<T>& data) {
     auto width_of_width =
       static_cast<unsigned_integer_t>(floor(log2(width)) + 1);
     buffer.put(0, width_of_width - 1);
-    for (unsigned_integer_t j = 1; j <= width_of_width; j++) {
-      buffer.put(width >> (width_of_width - j), 1);
-    }
-    for (unsigned_integer_t j = 2; j <= width; j++) {
-      buffer.put(static_cast<unsigned_integer_t>(data[i]) >> (width - j), 1);
-    }
+    buffer.rput(width, width_of_width);
+    buffer.rput(size_type_t<8>(data[i]), width - 1);
   }
   return std::make_pair(buffer.seek_to_byte_boundary(),
          std::make_pair(data.size(), T{}));
@@ -159,16 +149,10 @@ auto DeltaCodingDecode(const std::vector<uint8_t>& data, size_t length) {
   std::vector<T> ret(length);
   BytesToBits<8> buffer(data);
   for (size_t i = 0; i < length; i++) {
-    unsigned_integer_t width_of_width = 0, width = 1;
+    unsigned_integer_t width_of_width = 0;
     for (; buffer.get(1) != 1; width_of_width++) {}
-    for (; width_of_width != 0; width_of_width--) {
-      width = (width << 1) + buffer.get(1);
-    }
-    T value = 1;
-    for (; width > 1; width--) {
-      value = (value << 1) + T(buffer.get(1));
-    }
-    ret[i] = value;
+    auto width = buffer.rget(width_of_width, 1);
+    ret[i] = T(buffer.rget(width - 1, 1));
   }
   return ret;
 }
@@ -206,9 +190,7 @@ auto OmegaCodingEncode(const std::vector<T>& data) {
         break;
       }
       auto width = static_cast<unsigned_integer_t>(floor(log2(*it)) + 1);
-      for (unsigned_integer_t j = 1; j <= width; j++) {
-        buffer.put(static_cast<size_type_t<8>>(*it >> (width - j)), 1);
-      }
+      buffer.rput(size_type_t<8>(*it), width);
     }
   }
   return std::make_pair(buffer.seek_to_byte_boundary(),
@@ -227,11 +209,7 @@ auto OmegaCodingDecode(const std::vector<uint8_t>& data, size_t length) {
   for (size_t i = 0; i < length; i++) {
     size_type_t<8> n = 1;
     while (buffer.get(1) != 0) {
-      auto width = n;
-      n = 1;
-      for (size_t j = 0; j < width; j++) {
-        n = (n << 1) + buffer.get(1);
-      }
+      n = buffer.rget(n, 1);
     }
     ret[i] = T(n);
   }
@@ -269,9 +247,7 @@ auto GolombCodingEncode(const std::vector<T>& data, T m) {
         buffer.put(0, 1);
       }
       buffer.put(1, 1);
-      for (T j = 1; j <= b; j++) {
-        buffer.put(static_cast<size_type_t<8>>(r >> (b - j)), 1);
-      }
+      buffer.rput(size_type_t<8>(r), size_t(b));
     }
   } else {
     auto bb = (T(1) << b) - m;
@@ -285,14 +261,10 @@ auto GolombCodingEncode(const std::vector<T>& data, T m) {
       }
       buffer.put(1, 1);
       if (r < bb) {
-        for (T j = 1; j <= c; j++) {
-          buffer.put(static_cast<size_type_t<8>>(r >> (c - j)), 1);
-        }
+        buffer.rput(size_type_t<8>(r), size_t(c));
       } else {
         r += (T(1) << b) - m;
-        for (T j = 1; j <= b; j++) {
-          buffer.put(static_cast<size_type_t<8>>(r >> (b - j)), 1);
-        }
+        buffer.rput(size_type_t<8>(r), size_t(b));
       }
     }
   }
@@ -319,9 +291,7 @@ auto GolombCodingDecode(const std::vector<uint8_t>& data,
     for (size_t i = 0; i < length; i++) {
       T q{}, r{};
       for (; buffer.get(1) != 1; q++) {}
-      for (T j = 1; j <= b; j++) {
-        r = (r << 1) + T(buffer.get(1));
-      }
+      r = T(buffer.rget(size_t(b)));
       ret[i] = q * m + r;
     }
   } else {
@@ -330,9 +300,7 @@ auto GolombCodingDecode(const std::vector<uint8_t>& data,
     for (size_t i = 0; i < length; i++) {
       T q{}, r{};
       for (; buffer.get(1) != 1; q++) {}
-      for (T j = 1; j <= c; j++) {
-        r = (r << 1) + T(buffer.get(1));
-      }
+      r = T(buffer.rget(size_t(c)));
       if (r >= bb) {
         r = (r << 1) + T(buffer.get(1));
         r -= (T(1) << b) - m;
