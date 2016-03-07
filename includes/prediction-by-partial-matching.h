@@ -6,11 +6,10 @@
 #ifndef INCLUDES_PREDICTION_BY_PARTIAL_MATCHING_H_
 #define INCLUDES_PREDICTION_BY_PARTIAL_MATCHING_H_
 
-#include <stdint.h>
-
 /// \privatesection
 int gets();
 /// \publicsection
+#include <cstdint>
 #include <vector>
 #include <map>
 #include <set>
@@ -1705,7 +1704,7 @@ class Predictor<T, Depth, MethodD> {
 /// \brief PPM Algorithm Encode Function
 /// \param[in] data sequence
 /// \param[in] A data set
-/// \return encoded sequence as \c std::vector<uint8_t>
+/// \return encoded sequence as \c std::vector<std::uint8_t>
 template <enum Method M, int Depth, typename T>
 auto Encode(const std::vector<T>& data, const std::set<T>& A) {
   Predictor<T, Depth, M> predictor(A);
@@ -1732,7 +1731,7 @@ auto Encode(const std::vector<T>& data, const std::set<T>& A) {
 /// \fn Encode(const std::vector<T>& data)
 /// \brief PPM Algorithm Encode Function
 /// \param[in] data sequence
-/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of encoded sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of data set and length of the original sequence
 template <enum Method M, int Depth, typename T>
 auto Encode(const std::vector<T>& data) {
@@ -1749,7 +1748,7 @@ auto Encode(const std::vector<T>& data) {
 ///        Assumes data sequence are in [0, max].
 /// \param[in] data sequence
 /// \param[in] max minimum of supremum or maximum value of the sequence
-/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of encoded sequence as \c std::vector<std::uint8_t> and
 ///         length of the original sequence
 template <enum Method M, int Depth, typename T>
 auto NumericEncode(const std::vector<T>& data, const T& max) {
@@ -1764,7 +1763,7 @@ auto NumericEncode(const std::vector<T>& data, const T& max) {
 /// \brief PPM Algorithm Encode Function.
 ///        Assumes data sequence has maximum value.
 /// \param[in] data sequence
-/// \return \c std::pair of encoded sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of encoded sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of maximum value and length of the original sequence
 template <enum Method M, int Depth, typename T>
 auto NumericEncode(const std::vector<T>& data) {
@@ -1778,7 +1777,7 @@ auto NumericEncode(const std::vector<T>& data) {
   return std::make_pair(encoded.first, std::make_pair(max, data.size()));
 }
 
-/// \fn Decode(const std::vector<uint8_t>& data,
+/// \fn Decode(const std::vector<std::uint8_t>& data,
 ///            const std::set<T>& A,
 ///            std::size_t original_size)
 /// \brief PPM Algorithm Decode Function
@@ -1787,7 +1786,7 @@ auto NumericEncode(const std::vector<T>& data) {
 /// \param[in] original_size length of the original sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto Decode(const std::vector<uint8_t>& data,
+auto Decode(const std::vector<std::uint8_t>& data,
             const std::set<T>& A,
             std::size_t original_size) {
   Predictor<T, Depth, M> predictor(A);
@@ -1818,22 +1817,22 @@ auto Decode(const std::vector<uint8_t>& data,
   return ret;
 }
 
-/// \fn Decode(const std::pair<std::vector<uint8_t>,
+/// \fn Decode(const std::pair<std::vector<std::uint8_t>,
 ///                  std::pair<std::set<T>, std::size_t>>& tuple)
 /// \brief PPM Algorithm Decode Function
-/// \param[in] tuple \c std::pair of data sequence as \c std::vector<uint8_t>
+/// \param[in] tuple \c std::pair of data sequence as \c std::vector<std::uint8_t>
 ///            and \c std::pair of data set as \c std::set<T> and
 ///            length of the original sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto Decode(const std::pair<std::vector<uint8_t>,
+auto Decode(const std::pair<std::vector<std::uint8_t>,
                   std::pair<std::set<T>, std::size_t>>& tuple) {
   return Decode<M, Depth, T>(tuple.first,
                              tuple.second.first,
                              tuple.second.second);
 }
 
-/// \fn NumericDecode(const std::vector<uint8_t>& data,
+/// \fn NumericDecode(const std::vector<std::uint8_t>& data,
 ///                   const T& max,
 ///                   std::size_t original_size)
 /// \brief PPM Algorithm Decode Function
@@ -1842,7 +1841,7 @@ auto Decode(const std::pair<std::vector<uint8_t>,
 /// \param[in] original_size length of the original sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto NumericDecode(const std::vector<uint8_t>& data,
+auto NumericDecode(const std::vector<std::uint8_t>& data,
                    const T& max,
                    std::size_t original_size) {
   std::set<T> A{};
@@ -1852,7 +1851,7 @@ auto NumericDecode(const std::vector<uint8_t>& data,
   return Decode<M, Depth, T>(data, A, original_size);
 }
 
-/// \fn NumericDecode(const std::pair<std::vector<uint8_t>, std::size_t>& pair,
+/// \fn NumericDecode(const std::pair<std::vector<std::uint8_t>, std::size_t>& pair,
 ///                   const T& max)
 /// \brief PPM Algorithm Decode Function
 /// \param[in] pair \c std::pair of data sequence and length of the original
@@ -1861,12 +1860,12 @@ auto NumericDecode(const std::vector<uint8_t>& data,
 ///            sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto NumericDecode(const std::pair<std::vector<uint8_t>, std::size_t>& pair,
+auto NumericDecode(const std::pair<std::vector<std::uint8_t>, std::size_t>& pair,
                    const T& max) {
   return NumericDecode(pair.first, max, pair.second);
 }
 
-/// \fn NumericDecode(const std::pair<std::vector<uint8_t>,
+/// \fn NumericDecode(const std::pair<std::vector<std::uint8_t>,
 ///                         std::pair<T, std::size_t>>& tuple)
 /// \brief PPM Algorithm Decode Function
 /// \param[in] tuple \c std::pair of data sequence and
@@ -1874,7 +1873,7 @@ auto NumericDecode(const std::pair<std::vector<uint8_t>, std::size_t>& pair,
 ///            original sequence and length of the original sequence
 /// \return data sequence as \c std::vector<T>
 template <enum Method M, int Depth, typename T>
-auto NumericDecode(const std::pair<std::vector<uint8_t>,
+auto NumericDecode(const std::pair<std::vector<std::uint8_t>,
                          std::pair<T, std::size_t>>& tuple) {
   return NumericDecode(tuple.first, tuple.second.first, tuple.second.second);
 }

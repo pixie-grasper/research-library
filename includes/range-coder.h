@@ -6,11 +6,10 @@
 #ifndef INCLUDES_RANGE_CODER_H_
 #define INCLUDES_RANGE_CODER_H_
 
-#include <stdint.h>
-
 /// \privatesection
 int gets();
 /// \publicsection
+#include <cstdint>
 #include <vector>
 #include <map>
 #include <utility>
@@ -68,7 +67,7 @@ auto idiv<8>(size_type_t<8> x, size_type_t<8> z) {
 
 template <std::size_t N>
 struct EncoderContinuation {
-  std::vector<uint8_t> buffer;
+  std::vector<std::uint8_t> buffer;
   size_type_t<N> low, range;
 };
 
@@ -133,7 +132,7 @@ struct DecoderContinuation {
 };
 
 template <std::size_t N, typename T>
-auto decode_init(const std::vector<uint8_t>& data) {
+auto decode_init(const std::vector<std::uint8_t>& data) {
   DecoderContinuation<N, T> cont{};
   cont.range = size_type_t<N>(UINT64_MAX);
   for (std::size_t i = 0; i < N; i++) {
@@ -202,7 +201,7 @@ auto decode_fetch(const DecoderContinuation<N, T>& cont, std::size_t sum) {
 
 template <std::size_t N, typename T>
 auto decode_process(DecoderContinuation<N, T>&& cont,
-                    const std::vector<uint8_t>& data,
+                    const std::vector<std::uint8_t>& data,
                     const unsigned_integer_t low,
                     const unsigned_integer_t range,
                     std::size_t sum) {
@@ -227,7 +226,7 @@ auto decode_process(DecoderContinuation<N, T>&& cont,
 // fixed frequency
 template <std::size_t N, typename T>
 auto decode_process(DecoderContinuation<N, T>&& cont,
-                    const std::vector<uint8_t>& data,
+                    const std::vector<std::uint8_t>& data,
                     const std::vector<std::pair<T, unsigned_integer_t>>& freq,
                     const std::vector<unsigned_integer_t>& sum_freq) {
   auto sum = sum_freq.back() + freq.back().second;
@@ -267,7 +266,7 @@ auto decode_process(DecoderContinuation<N, T>&& cont,
 /// \brief RangeCoder Static Encode Function
 /// \param[in] data sequence
 /// \param[in] freq list of frequency of the characters
-/// \return encoded sequence as \c std::vector<uint8_t>
+/// \return encoded sequence as \c std::vector<std::uint8_t>
 template <typename T>
 auto StaticEncode(const std::vector<T>& data,
                   const std::vector<std::pair<T, unsigned_integer_t>>& freq) {
@@ -291,7 +290,7 @@ auto StaticEncode(const std::vector<T>& data,
 /// \fn StaticEncode(const std::vector<T>& data)
 /// \brief RangeCoder Static Encode Function
 /// \param[in] data sequence
-/// \return std::pair of encoded sequence as \c std::vector<uint8_t> and
+/// \return std::pair of encoded sequence as \c std::vector<std::uint8_t> and
 ///         list of frequency of the characters as
 ///         std::vector<std::pair<T, unsigned_integer_t>>
 template <typename T>
@@ -310,7 +309,7 @@ auto StaticEncode(const std::vector<T>& data) {
                                        data.size()));
 }
 
-/// \fn StaticDecode(const std::vector<uint8_t>& data,
+/// \fn StaticDecode(const std::vector<std::uint8_t>& data,
 ///                  const std::vector<std::pair<T, unsigned_integer_t>>& freq,
 ///                  std::size_t original_size)
 /// \brief RangeCoder Static Decode Function
@@ -319,7 +318,7 @@ auto StaticEncode(const std::vector<T>& data) {
 /// \param[in] original_size length of the original sequence
 /// \return original sequence as std::vector<T>
 template <typename T>
-auto StaticDecode(const std::vector<uint8_t>& data,
+auto StaticDecode(const std::vector<std::uint8_t>& data,
                   const std::vector<std::pair<T, unsigned_integer_t>>& freq,
                   std::size_t original_size) {
   std::vector<unsigned_integer_t> sum_freq;
@@ -338,19 +337,19 @@ auto StaticDecode(const std::vector<uint8_t>& data,
 }
 
 /// \fn StaticDecode(
-///       const std::pair<std::vector<uint8_t>,
+///       const std::pair<std::vector<std::uint8_t>,
 ///                       std::pair<std::vector<std::pair<T,
 ///                                                       unsigned_integer_t>>,
 ///                                 std::size_t>>& tuple)
 /// \brief RangeCoder Static Decode Function
-/// \param[in] tuple std::pair of data sequence as std::vector<uint8_t> and
+/// \param[in] tuple std::pair of data sequence as std::vector<std::uint8_t> and
 ///            std::pair of list of frequency of the characters on the source as
 ///            std::vector<std::pair<T, unsigned_integer_t>> and data length as
 ///            std::size_t
 /// \return original sequence as std::vector<T>
 template <typename T>
 auto StaticDecode(const std::pair<
-                          std::vector<uint8_t>,
+                          std::vector<std::uint8_t>,
                           std::pair<
                             std::vector<std::pair<T, unsigned_integer_t>>,
                             std::size_t>>& tuple) {
@@ -362,7 +361,7 @@ auto StaticDecode(const std::pair<
 ///        To solve the zero-frequency-problem, use the Method A.
 /// \param[in] data sequence
 /// \param[in] max maximum value of the data
-/// \return \c std::pair of sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of sequence as \c std::vector<std::uint8_t> and
 ///         length of the data sequence as \c std::size_t
 template <typename T>
 auto AdaptiveEncodeA(const std::vector<T>& data, const T& max) {
@@ -411,7 +410,7 @@ auto AdaptiveEncodeA(const std::vector<T>& data, const T& max) {
 /// \brief RangeCoder Adaptive Encode Function.
 ///        To solve the zero-frequency-problem, use the Method A.
 /// \param[in] data sequence
-/// \return \c std::pair of sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of length of the original sequence as \c std::size_t and
 ///         maximum value of the original sequence as \c T
 template <typename T>
@@ -428,7 +427,7 @@ auto AdaptiveEncodeA(const std::vector<T>& data) {
                                        std::move(max)));
 }
 
-/// \fn AdaptiveDecodeA(const std::vector<uint8_t>& data,
+/// \fn AdaptiveDecodeA(const std::vector<std::uint8_t>& data,
 ///                    std::size_t original_size,
 ///                    const T& max)
 /// \brief RangeCoder Adaptive Decode Function.
@@ -438,7 +437,7 @@ auto AdaptiveEncodeA(const std::vector<T>& data) {
 /// \param[in] max maximum value of the original sequence
 /// \return original sequence as \c std::vector<T>
 template <typename T>
-auto AdaptiveDecodeA(const std::vector<uint8_t>& data,
+auto AdaptiveDecodeA(const std::vector<std::uint8_t>& data,
                      std::size_t original_size,
                      const T& max) {
   auto A = std::size_t(max + 1);
@@ -489,16 +488,16 @@ auto AdaptiveDecodeA(const std::vector<uint8_t>& data,
 }
 
 /// \fn AdaptiveDecodeA(const std::pair<
-///                            std::vector<uint8_t>,
+///                            std::vector<std::uint8_t>,
 ///                            std::pair<std::size_t, T>>& pair)
 /// \brief RangeCoder Adaptive Decode Function.
 ///        To solve the zero-frequency-problem, use the Method A.
-/// \param[in] pair \c std::pair of sequence as std::vector<uint8_t> and
+/// \param[in] pair \c std::pair of sequence as std::vector<std::uint8_t> and
 ///            \c std::pair of length of the original sequence as \c std::size_t and
 ///            maximum value of the original sequence
 /// \return original sequence as \c std::vector<T>
 template <typename T>
-auto AdaptiveDecodeA(const std::pair<std::vector<uint8_t>,
+auto AdaptiveDecodeA(const std::pair<std::vector<std::uint8_t>,
                            std::pair<std::size_t, T>>& tuple) {
   return AdaptiveDecodeA(tuple.first, tuple.second.first, tuple.second.second);
 }
@@ -508,7 +507,7 @@ auto AdaptiveDecodeA(const std::pair<std::vector<uint8_t>,
 ///        To solve the zero-frequency-problem, use the Method B.
 /// \param[in] data sequence
 /// \param[in] max maximum value of the data
-/// \return \c std::pair of sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of sequence as \c std::vector<std::uint8_t> and
 ///         length of the data sequence as \c std::size_t
 template <typename T>
 auto AdaptiveEncodeB(const std::vector<T>& data, const T& max) {
@@ -574,7 +573,7 @@ auto AdaptiveEncodeB(const std::vector<T>& data, const T& max) {
 /// \brief RangeCoder Adaptive Encode Function.
 ///        To solve the zero-frequency-problem, use the Method B.
 /// \param[in] data sequence
-/// \return \c std::pair of sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of length of the original sequence as \c std::size_t and
 ///         maximum value of the original sequence as \c T
 template <typename T>
@@ -591,7 +590,7 @@ auto AdaptiveEncodeB(const std::vector<T>& data) {
                                        std::move(max)));
 }
 
-/// \fn AdaptiveDecodeB(const std::vector<uint8_t>& data,
+/// \fn AdaptiveDecodeB(const std::vector<std::uint8_t>& data,
 ///                    std::size_t original_size,
 ///                    const T& max)
 /// \brief RangeCoder Adaptive Decode Function.
@@ -601,7 +600,7 @@ auto AdaptiveEncodeB(const std::vector<T>& data) {
 /// \param[in] max maximum value of the original sequence
 /// \return original sequence as \c std::vector<T>
 template <typename T>
-auto AdaptiveDecodeB(const std::vector<uint8_t>& data,
+auto AdaptiveDecodeB(const std::vector<std::uint8_t>& data,
                      std::size_t original_size,
                      const T& max) {
   auto A = std::size_t(max + 1);
@@ -670,16 +669,16 @@ auto AdaptiveDecodeB(const std::vector<uint8_t>& data,
 }
 
 /// \fn AdaptiveDecodeB(const std::pair<
-///                            std::vector<uint8_t>,
+///                            std::vector<std::uint8_t>,
 ///                            std::pair<std::size_t, T>>& pair)
 /// \brief RangeCoder Adaptive Decode Function.
 ///        To solve the zero-frequency-problem, use the Method B.
-/// \param[in] pair \c std::pair of sequence as std::vector<uint8_t> and
+/// \param[in] pair \c std::pair of sequence as std::vector<std::uint8_t> and
 ///            \c std::pair of length of the original sequence as \c std::size_t and
 ///            maximum value of the original sequence
 /// \return original sequence as \c std::vector<T>
 template <typename T>
-auto AdaptiveDecodeB(const std::pair<std::vector<uint8_t>,
+auto AdaptiveDecodeB(const std::pair<std::vector<std::uint8_t>,
                            std::pair<std::size_t, T>>& tuple) {
   return AdaptiveDecodeB(tuple.first, tuple.second.first, tuple.second.second);
 }
@@ -689,7 +688,7 @@ auto AdaptiveDecodeB(const std::pair<std::vector<uint8_t>,
 ///        To solve the zero-frequency-problem, use the Method C.
 /// \param[in] data sequence
 /// \param[in] max maximum value of the data
-/// \return \c std::pair of sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of sequence as \c std::vector<std::uint8_t> and
 ///         length of the data sequence as \c std::size_t
 template <typename T>
 auto AdaptiveEncodeC(const std::vector<T>& data, const T& max) {
@@ -740,7 +739,7 @@ auto AdaptiveEncodeC(const std::vector<T>& data, const T& max) {
 /// \brief RangeCoder Adaptive Encode Function.
 ///        To solve the zero-frequency-problem, use the Method C.
 /// \param[in] data sequence
-/// \return \c std::pair of sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of length of the original sequence as \c std::size_t and
 ///         maximum value of the original sequence as \c T
 template <typename T>
@@ -757,7 +756,7 @@ auto AdaptiveEncodeC(const std::vector<T>& data) {
                                        std::move(max)));
 }
 
-/// \fn AdaptiveDecodeC(const std::vector<uint8_t>& data,
+/// \fn AdaptiveDecodeC(const std::vector<std::uint8_t>& data,
 ///                    std::size_t original_size,
 ///                    const T& max)
 /// \brief RangeCoder Adaptive Decode Function.
@@ -767,7 +766,7 @@ auto AdaptiveEncodeC(const std::vector<T>& data) {
 /// \param[in] max maximum value of the original sequence
 /// \return original sequence as \c std::vector<T>
 template <typename T>
-auto AdaptiveDecodeC(const std::vector<uint8_t>& data,
+auto AdaptiveDecodeC(const std::vector<std::uint8_t>& data,
                      std::size_t original_size,
                      const T& max) {
   auto A = std::size_t(max + 1);
@@ -820,16 +819,16 @@ auto AdaptiveDecodeC(const std::vector<uint8_t>& data,
 }
 
 /// \fn AdaptiveDecodeC(const std::pair<
-///                            std::vector<uint8_t>,
+///                            std::vector<std::uint8_t>,
 ///                            std::pair<std::size_t, T>>& pair)
 /// \brief RangeCoder Adaptive Decode Function.
 ///        To solve the zero-frequency-problem, use the Method C.
-/// \param[in] pair \c std::pair of sequence as std::vector<uint8_t> and
+/// \param[in] pair \c std::pair of sequence as std::vector<std::uint8_t> and
 ///            \c std::pair of length of the original sequence as \c std::size_t and
 ///            maximum value of the original sequence
 /// \return original sequence as \c std::vector<T>
 template <typename T>
-auto AdaptiveDecodeC(const std::pair<std::vector<uint8_t>,
+auto AdaptiveDecodeC(const std::pair<std::vector<std::uint8_t>,
                            std::pair<std::size_t, T>>& tuple) {
   return AdaptiveDecodeC(tuple.first, tuple.second.first, tuple.second.second);
 }
@@ -839,7 +838,7 @@ auto AdaptiveDecodeC(const std::pair<std::vector<uint8_t>,
 ///        To solve the zero-frequency-problem, use the Method D.
 /// \param[in] data sequence
 /// \param[in] max maximum value of the data
-/// \return \c std::pair of sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of sequence as \c std::vector<std::uint8_t> and
 ///         length of the data sequence as \c std::size_t
 template <typename T>
 auto AdaptiveEncodeD(const std::vector<T>& data, const T& max) {
@@ -890,7 +889,7 @@ auto AdaptiveEncodeD(const std::vector<T>& data, const T& max) {
 /// \brief RangeCoder Adaptive Encode Function.
 ///        To solve the zero-frequency-problem, use the Method D.
 /// \param[in] data sequence
-/// \return \c std::pair of sequence as \c std::vector<uint8_t> and
+/// \return \c std::pair of sequence as \c std::vector<std::uint8_t> and
 ///         \c std::pair of length of the original sequence as \c std::size_t and
 ///         maximum value of the original sequence as \c T
 template <typename T>
@@ -907,7 +906,7 @@ auto AdaptiveEncodeD(const std::vector<T>& data) {
                                        std::move(max)));
 }
 
-/// \fn AdaptiveDecodeD(const std::vector<uint8_t>& data,
+/// \fn AdaptiveDecodeD(const std::vector<std::uint8_t>& data,
 ///                    std::size_t original_size,
 ///                    const T& max)
 /// \brief RangeCoder Adaptive Decode Function.
@@ -917,7 +916,7 @@ auto AdaptiveEncodeD(const std::vector<T>& data) {
 /// \param[in] max maximum value of the original sequence
 /// \return original sequence as \c std::vector<T>
 template <typename T>
-auto AdaptiveDecodeD(const std::vector<uint8_t>& data,
+auto AdaptiveDecodeD(const std::vector<std::uint8_t>& data,
                      std::size_t original_size,
                      const T& max) {
   auto A = std::size_t(max + 1);
@@ -970,16 +969,16 @@ auto AdaptiveDecodeD(const std::vector<uint8_t>& data,
 }
 
 /// \fn AdaptiveDecodeD(const std::pair<
-///                            std::vector<uint8_t>,
+///                            std::vector<std::uint8_t>,
 ///                            std::pair<std::size_t, T>>& pair)
 /// \brief RangeCoder Adaptive Decode Function.
 ///        To solve the zero-frequency-problem, use the Method D.
-/// \param[in] pair \c std::pair of sequence as std::vector<uint8_t> and
+/// \param[in] pair \c std::pair of sequence as std::vector<std::uint8_t> and
 ///            \c std::pair of length of the original sequence as \c std::size_t and
 ///            maximum value of the original sequence
 /// \return original sequence as \c std::vector<T>
 template <typename T>
-auto AdaptiveDecodeD(const std::pair<std::vector<uint8_t>,
+auto AdaptiveDecodeD(const std::pair<std::vector<std::uint8_t>,
                            std::pair<std::size_t, T>>& tuple) {
   return AdaptiveDecodeD(tuple.first, tuple.second.first, tuple.second.second);
 }
