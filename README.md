@@ -25,6 +25,7 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 - Elias Coding
 - Fast Fourier Transform
 - Golomb Coding
+- Huffman Coding
 - Move To Front
 - Prediction by Partial Matching
 - Range Coder (Static, Adaptive)
@@ -48,7 +49,8 @@ $ make docs
 ## TODO
 以下のアルゴリズムを実装する予定です。
 
-- Huffman Coding
+- Ziv-Lempel 77 Algorithm
+- CRC/Adler Algorithm
 
 ## NOT TODO
 以下のアルゴリズムは宗教的な理由により実装*しない*予定です。
