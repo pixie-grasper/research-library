@@ -62,5 +62,8 @@ $ make docs
 ## Authors
 - pixie-grasper
 
+## Special Thanks
+- bolero-MURAKAMI
+
 ## License
 The MIT License
