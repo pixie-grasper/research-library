@@ -146,8 +146,8 @@ auto IMTF(const std::vector<unsigned_integer_t>& sequence,
         if (p == 0) {
           auto&& w = *it;
           ret.push_back(w);
+          dictionary.push_front(std::move(w));
           dictionary.erase(it);
-          dictionary.push_front(w);
           break;
         }
         p--;
@@ -195,8 +195,8 @@ auto IMTF(const std::vector<unsigned_integer_t>& sequence,
         if (p == 0) {
           auto&& w = *it;
           ret.push_back(w);
+          dictionary.push_front(std::move(w));
           dictionary.erase(it);
-          dictionary.push_front(w);
           break;
         }
         p--;
@@ -244,8 +244,8 @@ auto NumericIMTF(const std::vector<unsigned_integer_t>& sequence) {
         if (p == 0) {
           auto&& w = *it;
           ret.push_back(w);
+          dictionary.push_front(std::move(w));
           dictionary.erase(it);
-          dictionary.push_front(w);
           break;
         }
         p--;
