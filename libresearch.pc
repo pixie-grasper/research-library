@@ -5,3 +5,4 @@ Description: Research Library
 Version: 0
 URL: https://github.com/pixie-grasper/research-library
 Cflags: -I${includedir} -std=c++1y
+Libs: -lm
