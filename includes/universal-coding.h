@@ -6,8 +6,7 @@
 #ifndef INCLUDES_UNIVERSAL_CODING_H_
 #define INCLUDES_UNIVERSAL_CODING_H_
 
-#include <math.h>
-
+#include <cmath>
 #include <vector>
 #include <utility>
 
@@ -81,7 +80,7 @@ template <typename T>
 auto GammaCodingEncode(const std::vector<T>& data) {
   BitsToBytes<8> buffer{};
   for (std::size_t i = 0; i < data.size(); i++) {
-    auto width = static_cast<unsigned_integer_t>(floor(log2(data[i])) + 1);
+    auto width = static_cast<unsigned_integer_t>(std::floor(std::log2(data[i])) + 1);
     buffer.put(0, width - 1);
     for (unsigned_integer_t j = 1; j <= width; j++) {
       buffer.put(static_cast<size_type_t<8>>(data[i]) >> (width - j), 1);
@@ -134,9 +133,9 @@ auto DeltaCodingEncode(const std::vector<T>& data) {
   BitsToBytes<8> buffer{};
   for (std::size_t i = 0; i < data.size(); i++) {
     auto width =
-      static_cast<unsigned_integer_t>(floor(log2(data[i])) + 1);
+      static_cast<unsigned_integer_t>(std::floor(std::log2(data[i])) + 1);
     auto width_of_width =
-      static_cast<unsigned_integer_t>(floor(log2(width)) + 1);
+      static_cast<unsigned_integer_t>(std::floor(std::log2(width)) + 1);
     buffer.put(0, width_of_width - 1);
     for (unsigned_integer_t j = 1; j <= width_of_width; j++) {
       buffer.put(width >> (width_of_width - j), 1);
@@ -198,14 +197,14 @@ auto OmegaCodingEncode(const std::vector<T>& data) {
     auto n = data[i];
     while (n != 1) {
       buffer2.push_back(n);
-      n = static_cast<T>(floor(log2(n)));
+      n = static_cast<T>(std::floor(std::log2(n)));
     }
     for (auto it = buffer2.rbegin();; ++it) {
       if (*it == 0) {
         buffer.put(0, 1);
         break;
       }
-      auto width = static_cast<unsigned_integer_t>(floor(log2(*it)) + 1);
+      auto width = static_cast<unsigned_integer_t>(std::floor(std::log2(*it)) + 1);
       for (unsigned_integer_t j = 1; j <= width; j++) {
         buffer.put(static_cast<size_type_t<8>>(*it >> (width - j)), 1);
       }
@@ -259,7 +258,7 @@ auto OmegaCodingDecode(const std::pair<std::vector<uint8_t>,
 template <typename T>
 auto GolombCodingEncode(const std::vector<T>& data, T m) {
   BitsToBytes<8> buffer{};
-  auto b = T(ceil(log2(m)));
+  auto b = T(std::ceil(std::log2(m)));
   if ((m & (m - 1)) == 0) {
     for (std::size_t i = 0; i < data.size(); i++) {
       auto d = data[i];
@@ -314,7 +313,7 @@ auto GolombCodingDecode(const std::vector<uint8_t>& data,
                          std::size_t length) {
   std::vector<T> ret(length);
   BytesToBits<8> buffer(data);
-  auto b = T(ceil(log2(m)));
+  auto b = T(std::ceil(std::log2(m)));
   if ((m & (m - 1)) == 0) {
     for (std::size_t i = 0; i < length; i++) {
       T q{}, r{};
