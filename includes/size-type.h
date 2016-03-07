@@ -18,7 +18,7 @@ namespace ResearchLibrary {
 ///        if the integer equals to \c 1, \c 2, \c 4 or \c 8,
 ///        \c size_type::type will declared
 ///        and \c sizeof(size_type<N>::type) == \c N.
-template <size_t N>
+template <std::size_t N>
 struct size_type;
 
 /// \privatesection
@@ -45,7 +45,7 @@ struct size_type<8> {
 /// \publicsection
 /// \typedef size_type_t
 /// \brief \c size_type_t template declaration
-template <size_t N>
+template <std::size_t N>
 using size_type_t = typename size_type<N>::type;
 
 /// \var unsigned_integer_size

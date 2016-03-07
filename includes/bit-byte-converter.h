@@ -9,6 +9,7 @@
 /// \privatesection
 int gets();
 /// \publicsection
+#include <cstddef>
 #include <vector>
 #include <map>
 #include <utility>
@@ -24,14 +25,14 @@ namespace ResearchLibrary {
 
 /// \class BitsToBytes
 /// \brief converts bit stream to byte stream
-template <size_t N>
+template <std::size_t N>
 class BitsToBytes {
  private:
   std::vector<uint8_t> data;
-  size_t buffered_length;
+  std::size_t buffered_length;
   uint8_t buffered_bits;
 
-  size_type_t<N> mask(size_t n) {
+  size_type_t<N> mask(std::size_t n) {
     return (size_type_t<N>(1) << n) - 1;
   }
 
@@ -42,7 +43,7 @@ class BitsToBytes {
   /// \brief put a bits to the stream
   /// \param[in] value contains bit-stream
   /// \param[in] length length of the bit-stream
-  void put(size_type_t<N> value, size_t length) {
+  void put(size_type_t<N> value, std::size_t length) {
     value &= mask(length);
     if (buffered_length + length >= 8) {
       // | <-   value  -> | <- buffered -> |
@@ -79,14 +80,14 @@ class BitsToBytes {
 
 /// \class BytesToBits
 /// \brief converts byte stream to bit stream
-template <size_t N>
+template <std::size_t N>
 class BytesToBits {
  private:
   std::vector<uint8_t> buffer;
-  size_t data_index, buffered_length;
+  std::size_t data_index, buffered_length;
   size_type_t<N> buffered_bits;
 
-  size_type_t<N> mask(size_t n) {
+  size_type_t<N> mask(std::size_t n) {
     return (size_type_t<N>(1) << n) - 1;
   }
 
@@ -110,9 +111,9 @@ class BytesToBits {
     return;
   }
 
-  /// \fn get(size_t length)
+  /// \fn get(std::size_t length)
   /// \brief get a value from the stream
-  size_type_t<N> get(size_t length) {
+  size_type_t<N> get(std::size_t length) {
     if (length > buffered_length) {
       // | <- buffer -> | <- buffered bits -> |
       // | <- rest -> | <-      value      -> |
@@ -141,15 +142,15 @@ class BytesToBits {
     }
   }
 
-  /// \fn fetch(size_t length)
+  /// \fn fetch(std::size_t length)
   /// \brief fetch a value from the stream
-  size_type_t<N> fetch(size_t length) const {
+  size_type_t<N> fetch(std::size_t length) const {
     if (length > buffered_length) {
       auto value = buffered_bits;
       auto stored_length = buffered_length;
       length -= buffered_length;
       auto index = data_index;
-      size_t extra_read_length = 0;
+      std::size_t extra_read_length = 0;
       size_type_t<N> extra_buffer = 0;
       while (length > extra_read_length) {
         extra_buffer |= size_type_t<N>(buffer[index]) << extra_read_length;

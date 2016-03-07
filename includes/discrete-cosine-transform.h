@@ -6,6 +6,7 @@
 #ifndef INCLUDES_DISCRETE_COSINE_TRANSFORM_H_
 #define INCLUDES_DISCRETE_COSINE_TRANSFORM_H_
 
+#include <cstddef>
 #include <vector>
 
 #ifdef RESEARCHLIB_OFFLINE_TEST
@@ -27,7 +28,7 @@ template <typename T>
 auto DCT(const std::vector<T>& data) {
   auto N = data.size() * 4;
   std::vector<T> re(N, 0), im(N, 0);
-  for (size_t i = 0; i < data.size(); i++) {
+  for (std::size_t i = 0; i < data.size(); i++) {
     re[2 * i + 1] = re[N - 2 * i - 1] = data[i];
   }
   auto&& ret = FastFourierTransform::FFT(re, im).first;
@@ -45,12 +46,12 @@ auto IDCT(const std::vector<T>& data) {
   std::vector<T> re(N, 0), im(N, 0);
   re[0] = data[0];
   re[N / 2] = -data[0];
-  for (size_t i = 1; i < data.size(); i++) {
+  for (std::size_t i = 1; i < data.size(); i++) {
     re[i] = re[N - i] = data[i];
     re[N / 2 + i] = re[N / 2 - i] = -data[i];
   }
   auto&& ret = FastFourierTransform::IFFT(re, im).first;
-  for (size_t i = 0; i < data.size(); i++) {
+  for (std::size_t i = 0; i < data.size(); i++) {
     ret[i] = ret[2 * i + 1];
   }
   ret.resize(data.size());

@@ -9,6 +9,7 @@
 /// \privatesection
 int gets();
 /// \publicsection
+#include <cstddef>
 #include <vector>
 #include <map>
 #include <utility>
@@ -27,20 +28,20 @@ namespace ResearchLibrary {
 namespace FastFourierTransform {
 
 /// \privatesection
-template <size_t N>
+template <std::size_t N>
 auto width_map() {
-  std::map<size_type_t<N>, size_t> w;
-  for (size_t i = 0; i < N * 8; i++) {
+  std::map<size_type_t<N>, std::size_t> w;
+  for (std::size_t i = 0; i < N * 8; i++) {
     w[size_type_t<N>(1) << i] = i;
   }
   return w;
 }
 
-template <size_t N>
-size_type_t<N> upside_down(size_type_t<N> x, size_t width);
+template <std::size_t N>
+size_type_t<N> upside_down(size_type_t<N> x, std::size_t width);
 
 template <>
-size_type_t<1> upside_down<1>(size_type_t<1> x, size_t width) {
+size_type_t<1> upside_down<1>(size_type_t<1> x, std::size_t width) {
   x = size_type_t<1>((x & 0x55) << 1) | size_type_t<1>((x & 0xaa) >> 1);
   x = size_type_t<1>((x & 0x33) << 2) | size_type_t<1>((x & 0xcc) >> 2);
   x = size_type_t<1>((x & 0x0f) << 4) | size_type_t<1>((x & 0xf0) >> 4);
@@ -48,7 +49,7 @@ size_type_t<1> upside_down<1>(size_type_t<1> x, size_t width) {
 }
 
 template <>
-size_type_t<2> upside_down<2>(size_type_t<2> x, size_t width) {
+size_type_t<2> upside_down<2>(size_type_t<2> x, std::size_t width) {
   x = size_type_t<2>((x & 0x5555) << 1) | size_type_t<2>((x & 0xaaaa) >> 1);
   x = size_type_t<2>((x & 0x3333) << 2) | size_type_t<2>((x & 0xcccc) >> 2);
   x = size_type_t<2>((x & 0x0f0f) << 4) | size_type_t<2>((x & 0xf0f0) >> 4);
@@ -57,7 +58,7 @@ size_type_t<2> upside_down<2>(size_type_t<2> x, size_t width) {
 }
 
 template <>
-size_type_t<4> upside_down<4>(size_type_t<4> x, size_t width) {
+size_type_t<4> upside_down<4>(size_type_t<4> x, std::size_t width) {
   x = ((x & 0x55555555) << 1)  | ((x & 0xaaaaaaaa) >> 1);
   x = ((x & 0x33333333) << 2)  | ((x & 0xcccccccc) >> 2);
   x = ((x & 0x0f0f0f0f) << 4)  | ((x & 0xf0f0f0f0) >> 4);
@@ -67,7 +68,7 @@ size_type_t<4> upside_down<4>(size_type_t<4> x, size_t width) {
 }
 
 template <>
-size_type_t<8> upside_down<8>(size_type_t<8> x, size_t width) {
+size_type_t<8> upside_down<8>(size_type_t<8> x, std::size_t width) {
   x = ((x & 0x5555555555555555) << 1)  | ((x & 0xaaaaaaaaaaaaaaaa) >> 1);
   x = ((x & 0x3333333333333333) << 2)  | ((x & 0xcccccccccccccccc) >> 2);
   x = ((x & 0x0f0f0f0f0f0f0f0f) << 4)  | ((x & 0xf0f0f0f0f0f0f0f0) >> 4);
@@ -86,21 +87,21 @@ size_type_t<8> upside_down<8>(size_type_t<8> x, size_t width) {
 template <typename T>
 auto FFT(const std::vector<T>& re, const std::vector<T>& im) {
   auto N = re.size();
-  auto width = width_map<sizeof(size_t)>()[N];
+  auto width = width_map<sizeof(std::size_t)>()[N];
   std::vector<T> t1re(N), t1im(N), t2re(N), t2im(N), c(N), s(N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     c[i] = cos(2 * M_PI * i / N);
     s[i] = -sin(2 * M_PI * i / N);
-    auto j = upside_down<sizeof(size_t)>(i, width);
+    auto j = upside_down<sizeof(std::size_t)>(i, width);
     t1re[i] = re[j];
     t1im[i] = im[j];
   }
-  for (size_t n = 1; n < N; n <<= 1) {
+  for (std::size_t n = 1; n < N; n <<= 1) {
     std::swap(t1re, t2re);
     std::swap(t1im, t2im);
     auto k = N / n / 2;
-    for (size_t i = 0; i < N; i += 2 * n) {
-      for (size_t j = 0; j < n; j++) {
+    for (std::size_t i = 0; i < N; i += 2 * n) {
+      for (std::size_t j = 0; j < n; j++) {
         auto cij = c[(i + j) * k % N], sij = s[(i + j) * k % N];
         auto cijn = c[(i + j + n) * k % N], sijn = s[(i + j + n) * k % N];
         t1re[i + j]     = t2re[i + j] + t2re[i + j + n] * cij
@@ -125,18 +126,18 @@ auto FFT(const std::vector<T>& re, const std::vector<T>& im) {
 template <typename T>
 auto FFT(const std::vector<std::complex<T>>& data) {
   auto N = data.size();
-  auto width = width_map<sizeof(size_t)>()[N];
+  auto width = width_map<sizeof(std::size_t)>()[N];
   std::vector<std::complex<T>> t1(N), t2(N), e(N);
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     e[i] = std::complex<T>(cos(2 * M_PI * i / N), -sin(2 * M_PI * i / N));
-    auto j = upside_down<sizeof(size_t)>(i, width);
+    auto j = upside_down<sizeof(std::size_t)>(i, width);
     t1[i] = data[j];
   }
-  for (size_t n = 1; n < N; n <<= 1) {
+  for (std::size_t n = 1; n < N; n <<= 1) {
     std::swap(t1, t2);
     auto k = N / n / 2;
-    for (size_t i = 0; i < N; i += 2 * n) {
-      for (size_t j = 0; j < n; j++) {
+    for (std::size_t i = 0; i < N; i += 2 * n) {
+      for (std::size_t j = 0; j < n; j++) {
         t1[i + j]     = t2[i + j] + t2[i + j + n] * e[(i + j) * k % N];
         t1[i + j + n] = t2[i + j] + t2[i + j + n] * e[(i + j + n) * k % N];
       }

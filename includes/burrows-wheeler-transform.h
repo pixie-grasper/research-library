@@ -9,6 +9,7 @@
 /// \privatesection
 int gets();
 /// \publicsection
+#include <cstddef>
 #include <vector>
 #include <utility>
 #include <algorithm>
@@ -30,20 +31,20 @@ bool ge(T x, T y) {
 
 template <typename T>
 auto suffix_sort_for_BWT(const std::vector<T>& source) {
-  constexpr auto SORTED_FLAG = size_t(1) << (sizeof(size_t) * 8 - 1);
+  constexpr auto SORTED_FLAG = std::size_t(1) << (sizeof(std::size_t) * 8 - 1);
   constexpr auto MASK = ~SORTED_FLAG;
   const auto N = source.size();
-  std::vector<size_t> I(N), V(N);
-  for (size_t i = 0; i < N; i++) {
+  std::vector<std::size_t> I(N), V(N);
+  for (std::size_t i = 0; i < N; i++) {
     I[i] = i;
   }
-  std::stable_sort(I.begin(), I.end(), [=](size_t x, size_t y) {
+  std::stable_sort(I.begin(), I.end(), [=](std::size_t x, std::size_t y) {
     return source[x] < source[y];
   });
   {
     auto last_character = source[I[0]];
-    size_t g = 0;
-    for (size_t i = N - 1; ge(i, decltype(i)(0)); i--) {
+    std::size_t g = 0;
+    for (std::size_t i = N - 1; ge(i, decltype(i)(0)); i--) {
       if (last_character != source[I[i]]) {
         g = i;
         last_character = source[I[i]];
@@ -51,16 +52,16 @@ auto suffix_sort_for_BWT(const std::vector<T>& source) {
       V[I[i]] = g;
     }
   }
-  for (size_t i = 0; i < N;) {
+  for (std::size_t i = 0; i < N;) {
     auto group = V[I[i]];
     if (i == group) {
       I[i] = SORTED_FLAG + 1;
     }
     i = group + 1;
   }
-  size_t h = 1;
+  std::size_t h = 1;
   while (h <= N) {
-    size_t first_position = 0, group_start_index = 0;
+    std::size_t first_position = 0, group_start_index = 0;
     bool sorted_sequence = false;
     do {
       if ((I[first_position] & SORTED_FLAG) != 0) {
@@ -78,7 +79,7 @@ auto suffix_sort_for_BWT(const std::vector<T>& source) {
         auto last_position = V[I[first_position]];
         std::sort(&I[first_position],
                   &I[last_position] + 1,
-                  [=](size_t x, size_t y) {
+                  [=](std::size_t x, std::size_t y) {
           return V[(x + h) % N] < V[(y + h) % N];
         });
         auto group = last_position;
@@ -109,7 +110,7 @@ auto suffix_sort_for_BWT(const std::vector<T>& source) {
     h <<= 1;
   }
 
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     I[V[i]] = i;
   }
   return I;
@@ -120,18 +121,18 @@ auto suffix_sort_for_BWT(const std::vector<T>& source) {
 /// \brief Burrows-Wheeler Transform Function
 /// \param[in] source sequence
 /// \return \c std::pair of
-///         sorted sequence as \c std::vector<T> and index as \c size_t
+///         sorted sequence as \c std::vector<T> and index as \c std::size_t
 template <typename T>
 auto BWT(const std::vector<T>& source) {
   if (source.size() == 0) {
-    return std::make_pair(std::vector<T>(), static_cast<size_t>(0));
+    return std::make_pair(std::vector<T>(), static_cast<std::size_t>(0));
   } else if (source.size() == 1) {
-    return std::make_pair(source, static_cast<size_t>(0));
+    return std::make_pair(source, static_cast<std::size_t>(0));
   }
   auto&& suffix_array = suffix_sort_for_BWT(source);
-  size_t index;
+  std::size_t index;
   std::vector<T> ret(source.size());
-  for (size_t i = 0; i < suffix_array.size(); i++) {
+  for (std::size_t i = 0; i < suffix_array.size(); i++) {
     if (suffix_array[i] == 0) {
       index = i;
     }
@@ -140,19 +141,19 @@ auto BWT(const std::vector<T>& source) {
   return std::make_pair(std::move(ret), index);
 }
 
-/// \fn IBWT(const std::vector<T>& source, size_t index)
+/// \fn IBWT(const std::vector<T>& source, std::size_t index)
 /// \brief Inverse Burrows-Wheeler Transform Function
 /// \param[in] source sorted sequence
 /// \param[in] index The index
 /// \return deconverted sequence as \c std::vector<T>
 template <typename T>
-auto IBWT(const std::vector<T>& source, size_t index) {
+auto IBWT(const std::vector<T>& source, std::size_t index) {
   const auto N = source.size();
-  std::vector<size_t> buffer(N);
-  for (size_t i = 0; i < N; i++) {
+  std::vector<std::size_t> buffer(N);
+  for (std::size_t i = 0; i < N; i++) {
     buffer[i] = i;
   }
-  std::stable_sort(buffer.begin(), buffer.end(), [=](size_t x, size_t y) {
+  std::stable_sort(buffer.begin(), buffer.end(), [=](std::size_t x, std::size_t y) {
     return source[x] < source[y];
   });
   std::vector<T> ret{};
@@ -163,13 +164,13 @@ auto IBWT(const std::vector<T>& source, size_t index) {
   return ret;
 }
 
-/// \fn IBWT(const std::pair<std::vector<T>, size_t>& source)
+/// \fn IBWT(const std::pair<std::vector<T>, std::size_t>& source)
 /// \brief Inverse Burrows-Wheeler Transform Function
 /// \param[in] source \c std::pair of sorted sequence as
-///            \c std::vector<T> and index as \c size_t
+///            \c std::vector<T> and index as \c std::size_t
 /// \return deconverted sequence as \c std::vector<T>
 template <typename T>
-auto IBWT(const std::pair<std::vector<T>, size_t>& source) {
+auto IBWT(const std::pair<std::vector<T>, std::size_t>& source) {
   return IBWT(source.first, source.second);
 }
 
