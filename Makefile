@@ -2,14 +2,16 @@ CC = clang
 CXX = clang++
 LINK = clang++
 MKDIR = mkdir
+LS = ls --color=no
 CP = cp
+CXXWARNFLAGS = -Weverything -Wno-c++98-compat -Wno-reserved-id-macro -Wno-padded -Wno-format-nonliteral -Wno-c++98-compat-pedantic -Wno-weak-vtables -Wno-documentation-unknown-command -Wno-documentation -Wno-missing-prototypes
 
 LIBS = $(wildcard includes/*.h)
 SRCS = $(LIBS:includes/%.h=tests/%-test.cc)
 OBJS = $(SRCS:.cc=.o)
 DEPS = $(SRCS:.cc=.d)
 HEADERS = $(SRCS:.cc=.h) $(LIBS)
-EXES = $(SRCS:.cc=.out)
+EXES = $(SRCS:.cc=.out) tests/multiple-link-checker.out
 
 # if exists libc++, use it.
 LIBCPP = $(shell if $(CXX) dummy.cc -o dummy.out -lc++ -std=c++1y > /dev/null 2>&1; then echo '-lc++'; else echo '-lstdc++'; fi)
@@ -44,8 +46,16 @@ docs:
 %.out: %.o
 	$(LINK) $< -o $@ $(LIBCPP) -lm
 
+tests/multiple-link-checker.out: tests/multiple1.o tests/multiple2.o
+	$(LINK) $^ -o $@ $(LIBCPP) -lm
+
+tests/multiple1.o tests/multiple2.o: tests/multiple.h
+
+tests/multiple.h: $(LIBS)
+	$(LS) ./includes | sed 's!^!#include "../includes/!' | sed 's/$$/"/' > $@
+
 %.o: %.cc Makefile
-	$(CXX) -c $< -o $@ -std=c++1y -MMD -MP -Weverything -Wno-c++98-compat -Wno-reserved-id-macro -Wno-padded -Wno-format-nonliteral -Wno-c++98-compat-pedantic -Wno-weak-vtables -Wno-documentation-unknown-command -Wno-documentation -Wno-missing-prototypes -DRESEARCHLIB_OFFLINE_TEST
+	$(CXX) -c $< -o $@ -std=c++1y -MMD -MP -DRESEARCHLIB_OFFLINE_TEST $(CXXWARNFLAGS)
 
 .PHONY: clean
 clean:

@@ -38,37 +38,7 @@ auto width_map() {
 }
 
 template <std::size_t N>
-size_type_t<N> upside_down(size_type_t<N> x, std::size_t width);
-
-template <>
-size_type_t<1> upside_down<1>(size_type_t<1> x, std::size_t width) {
-  x = size_type_t<1>((x & 0x55) << 1) | size_type_t<1>((x & 0xaa) >> 1);
-  x = size_type_t<1>((x & 0x33) << 2) | size_type_t<1>((x & 0xcc) >> 2);
-  x = size_type_t<1>((x & 0x0f) << 4) | size_type_t<1>((x & 0xf0) >> 4);
-  return x >> (8 - width);
-}
-
-template <>
-size_type_t<2> upside_down<2>(size_type_t<2> x, std::size_t width) {
-  x = size_type_t<2>((x & 0x5555) << 1) | size_type_t<2>((x & 0xaaaa) >> 1);
-  x = size_type_t<2>((x & 0x3333) << 2) | size_type_t<2>((x & 0xcccc) >> 2);
-  x = size_type_t<2>((x & 0x0f0f) << 4) | size_type_t<2>((x & 0xf0f0) >> 4);
-  x = size_type_t<2>((x & 0x00ff) << 8) | size_type_t<2>((x & 0xff00) >> 8);
-  return x >> (16 - width);
-}
-
-template <>
-size_type_t<4> upside_down<4>(size_type_t<4> x, std::size_t width) {
-  x = ((x & 0x55555555) << 1)  | ((x & 0xaaaaaaaa) >> 1);
-  x = ((x & 0x33333333) << 2)  | ((x & 0xcccccccc) >> 2);
-  x = ((x & 0x0f0f0f0f) << 4)  | ((x & 0xf0f0f0f0) >> 4);
-  x = ((x & 0x00ff00ff) << 8)  | ((x & 0xff00ff00) >> 8);
-  x = ((x & 0x0000ffff) << 16) | ((x & 0xffff0000) >> 16);
-  return x >> (32 - width);
-}
-
-template <>
-size_type_t<8> upside_down<8>(size_type_t<8> x, std::size_t width) {
+size_type_t<N> upside_down(size_type_t<N> x, std::size_t width) {
   x = ((x & 0x5555555555555555) << 1)  | ((x & 0xaaaaaaaaaaaaaaaa) >> 1);
   x = ((x & 0x3333333333333333) << 2)  | ((x & 0xcccccccccccccccc) >> 2);
   x = ((x & 0x0f0f0f0f0f0f0f0f) << 4)  | ((x & 0xf0f0f0f0f0f0f0f0) >> 4);

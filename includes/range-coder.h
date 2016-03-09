@@ -28,31 +28,21 @@ namespace RangeCoder {
 /// \privatesection
 template <std::size_t N>
 auto mulhi(size_type_t<N> u, size_type_t<N> v) {
-  return size_type_t<N>((size_type_t<2 * N>(u) * size_type_t<2 * N>(v)) >> N);
-}
-
-template <>
-auto mulhi<8>(size_type_t<8> u, size_type_t<8> v) {
-  auto u0 = u & 0xffffffff, u1 = u >> 32;
-  auto v0 = v & 0xffffffff, v1 = v >> 32;
+  auto u0 = u & size_type<N / 2>::max, u1 = u >> N * 8 / 2;
+  auto v0 = v & size_type<N / 2>::max, v1 = v >> N * 8 / 2;
   auto w0 = u0 * v0;
-  auto t = u1 * v0 + (w0 >> 32);
-  auto w1 = t & 0xffffffff, w2 = t >> 32;
+  auto t = u1 * v0 + (w0 >> N * 8 / 2);
+  auto w1 = t & size_type<N / 2>::max, w2 = t >> N * 8 / 2;
   w1 = u0 * v1 + w1;
-  return u1 * v1 + w2 + (w1 >> 32);
+  return u1 * v1 + w2 + (w1 >> N * 8 / 2);
 }
 
 template <std::size_t N>
 auto idiv(size_type_t<N> x, size_type_t<N> z) {
-  return size_type_t<N>((size_type_t<2 * N>(x) << N) / z);
-}
-
-template <>
-auto idiv<8>(size_type_t<8> x, size_type_t<8> z) {
-  size_type_t<8> y = 0;
-  for (auto i = 0; i < 64; i++) {
+  size_type_t<N> y = 0;
+  for (std::size_t i = 0; i < N * 8; i++) {
     auto t = false;
-    if (x & ~(UINT64_MAX >> 1)) {
+    if (x & ~(size_type<N>::max >> 1)) {
       t = true;
     }
     x = (x << 1) | (y >> 63);

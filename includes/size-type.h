@@ -25,21 +25,25 @@ struct size_type;
 template <>
 struct size_type<1> {
   using type = std::uint8_t;
+  static const type max = UINT8_MAX;
 };
 
 template <>
 struct size_type<2> {
   using type = std::uint16_t;
+  static const type max = UINT16_MAX;
 };
 
 template <>
 struct size_type<4> {
   using type = std::uint32_t;
+  static const type max = UINT32_MAX;
 };
 
 template <>
 struct size_type<8> {
   using type = std::uint64_t;
+  static const type max = UINT64_MAX;
 };
 
 /// \publicsection
