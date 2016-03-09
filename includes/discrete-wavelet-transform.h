@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <vector>
 #include <utility>
+#include <cstdlib>
 
 /// \namespace ResearchLibrary
 /// \namespace ResearchLibrary::DiscreteWaveletTransform

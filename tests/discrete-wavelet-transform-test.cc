@@ -1,7 +1,6 @@
 // Copyright 2015 pixie.grasper
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cmath>
 
 int gets();
 #include <vector>
