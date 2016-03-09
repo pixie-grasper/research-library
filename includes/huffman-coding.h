@@ -9,6 +9,7 @@
 /// \privatesection
 int gets();
 /// \publicsection
+#include <iostream>
 #include <vector>
 #include <map>
 #include <set>
@@ -136,9 +137,6 @@ struct HuffmanNode {
 
   bool is_node() const {
     if (right != nullptr || left != nullptr) {
-      if (right == nullptr || left == nullptr) {
-        fprintf(stderr, "warning: incorrect huffman tree.\n");
-      }
       return true;
     }
     return false;
@@ -163,7 +161,7 @@ auto Encode(const std::vector<T>& data,
   for (std::size_t i = 0; i < data.size(); i++) {
     auto it = code_map.find(data[i]);
     if (it == code_map.end()) {
-      fprintf(stderr, "word not in the dictionary.\n");
+      std::cerr << "word not in the dictionary." << std::endl;
       continue;
     }
     auto pair = it->second;

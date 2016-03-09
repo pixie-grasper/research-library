@@ -1,9 +1,8 @@
 // Copyright 2015 pixie.grasper
 
-#include <stdio.h>
-#include <stdlib.h>
 
 int gets();
+#include <cstdlib>
 #include <vector>
 #include <complex>
 

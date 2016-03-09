@@ -1,8 +1,8 @@
 // Copyright 2015 pixie.grasper
 
-#include <cmath>
 
 int gets();
+#include <cmath>
 #include <vector>
 #include <algorithm>
 
