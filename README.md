@@ -20,7 +20,7 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 する事によって各種アルゴリズムを利用できるようになります。
 
 ## 何ができるの？
-- Alder-32 Check Sum Function
+- Adler-32 Check Sum Function
 - Burrows Wheeler Transform (using Larsson-Sadakane's Algorithm)
 - CRC-32 Check Sum Function
 - Discrete Cosine Transform
