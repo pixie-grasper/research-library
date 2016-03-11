@@ -10,3 +10,4 @@
 #include "../includes/range-coder.h"
 #include "../includes/size-type.h"
 #include "../includes/universal-coding.h"
+#include "../includes/ziv-lempel-77.h"
