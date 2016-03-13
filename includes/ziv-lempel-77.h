@@ -103,7 +103,7 @@ class SuffixTree {
 
   void update_range_to_root(std::shared_ptr<ExplicitState<T>> s,
                             std::size_t k) {
-    while (s != nullptr) {
+    while (s != nullptr && s->p < k) {
       s->k = k - (s->p - s->k + 1);
       s->p = k - 1;
       k = s->k;
@@ -123,9 +123,7 @@ class SuffixTree {
     r->p = p;
     r->depth = s->depth + s->p - s->k + 1;
     r->parent = s;
-    if (s->p != k - 1) {
-      update_range_to_root(s, k);
-    }
+    update_range_to_root(s, k);
     return;
   }
 
@@ -159,21 +157,23 @@ class SuffixTree {
   }
 
   void update_matched(std::shared_ptr<ExplicitState<T>> s, std::size_t i) {
+    if (s == nullptr) {
+      return;
+    }
+    auto matched_to = s->k - s->depth - 1;
     auto matched_length = s->depth + s->p - s->k + 1;
     auto matched_from = i - matched_length - 1;
-    auto matched_to = s->k - s->depth - 1;
     while (matched_to + window_width < i) {
       s = s->parent.lock();
       if (s == nullptr) {
         return;
       }
-      matched_length = s->depth + s->p - s->k + 1;
-      matched_from = i - matched_length - 1;
       matched_to = s->k - s->depth - 1;
+      matched_length = s->depth + s->p - s->k + 1;
     }
     if (matched[matched_from].first < matched_length) {
       matched[matched_from].first = matched_length;
-      matched[matched_from].second = s->k - s->depth - 1;
+      matched[matched_from].second = matched_to;
     }
     return;
   }
@@ -193,8 +193,8 @@ class SuffixTree {
     // while not (end-point) do
     while (!end_point) {
       // creawte new transition g'(r, i, infty) = r' where r' is a new state;
-      update_matched(r, i);
       auto r_prime = create_state();
+      update_matched(r, i);
       connect(r, i, infty, r_prime, data);
       // if oldr != root then create new suffix link f'(oldr) = r;
       if (old_r != root_state) {
@@ -288,34 +288,6 @@ class SuffixTree {
     }
   }
 
-  auto find(const std::vector<T>& data,
-            std::size_t left_index,
-            std::size_t right_index) {
-    auto explicit_state = root_state;
-    std::size_t edge = 0, length = 0;
-    while (left_index <= right_index) {
-      auto ch = get_t_i(left_index, data);
-      if (!explicit_state->g.empty() &&
-          explicit_state->p - explicit_state->k + 1 <= length) {
-        if (explicit_state->g.find(ch) == explicit_state->g.end()) {
-          return false;
-        } else {
-          length -= explicit_state->p - explicit_state->k + 1;
-          explicit_state = explicit_state->g[ch];
-          edge = explicit_state->k - 1;
-        }
-      } else {
-        if (data[edge + length] == ch.character) {
-          left_index++;
-          length++;
-        } else {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
  public:
   SuffixTree() = default;
 
@@ -341,25 +313,6 @@ class SuffixTree {
       auto pair_2 = canonize(s, k, i, data);
       s = pair_2.first;
       k = pair_2.second;
-#if 0
-      // test
-      auto j = i - window_width + 1;
-      if (i < window_width) {
-        j = 1;
-      }
-      if (i != data.size() + 1) {
-        auto errored = false;
-        for (; j <= i; j++) {
-          auto found = find(data, j, i);
-          if (!found) {
-            errored = true;
-            fprintf(stderr, "error - %zu:%zu\n", j, i);
-          }
-        }
-        if (errored) {
-        }
-      }
-#endif
     }
     return;
   }
@@ -371,7 +324,7 @@ class SuffixTree {
 
 template <typename T>
 struct Word {
-  std::size_t start, length;
+  std::size_t position, start, length;
   T character;
 };
 
@@ -395,48 +348,115 @@ auto Encode(const std::vector<T>& data,
   tree.build(data, window_width);
   auto&& matched_length = tree.get();
   for (std::size_t i = 0; i < matched_length.size(); i++) {
-    if (matched_length[i].first < minimum_length) {
+    if (matched_length[i].first <= minimum_length) {
       matched_length[i].first = 0;
     }
   }
+#if 1
+  // DEFLATE's fixed Huffman code table
+  auto unmatch_cost = [=](std::size_t i) -> unsigned_integer_t {
+    auto t = data[i];
+    if (t <= 143) {
+      return 8;
+    } else {
+      return 9;
+    }
+  };
+  auto match_cost = [](std::size_t l, std::size_t d) {
+    auto length_cost = [](std::size_t length) -> unsigned_integer_t {
+      if (length <= 10) {
+        return 7;
+      } else if (length <= 18) {
+        return 8;
+      } else if (length <= 34) {
+        return 9;
+      } else if (length <= 66) {
+        return 10;
+      } else if (length <= 114) {
+        return 11;
+      } else if (length <= 130) {
+        return 12;
+      } else if (length <= 257) {
+        return 13;
+      } else {
+        return 8;
+      }
+    };
+    auto distance_cost = [](std::size_t distance) -> unsigned_integer_t {
+      if (distance <= 4) {
+        return 5;
+      } else {
+        return 3 + unsigned_integer_t(ceil(log2(distance)));
+      }
+    };
+    return length_cost(l) + distance_cost(d);
+  };
+#else
+  auto unmatch_cost = [](std::size_t) -> unsigned_integer_t {
+    return 1;
+  };
+  auto match_cost = [](std::size_t, std::size_t) -> unsigned_integer_t {
+    return 1;
+  };
+#endif
   std::vector<Work<T>> work(data.size() + 1);
-  auto unmatch_cost = [=](std::size_t) -> unsigned_integer_t {
-    return 1;
-  };
-  auto match_cost = [=](std::size_t) -> unsigned_integer_t {
-    return 1;
-  };
   work[0].cost = 0;
   for (std::size_t i = 0; i < data.size(); i++) {
     if (work[i].cost + unmatch_cost(i) < work[i + 1].cost) {
       work[i + 1].cost = work[i].cost + unmatch_cost(i);
       work[i + 1].from = i;
     }
-    if (matched_length[i].first != 0 &&
-        i + matched_length[i].first < work.size() &&
-        work[i].cost + match_cost(i) < work[i + matched_length[i].first].cost) {
-      work[i + matched_length[i].first].cost = work[i].cost + match_cost(i);
-      work[i + matched_length[i].first].from = i;
+    auto length = matched_length[i].first;
+    auto distance = i - matched_length[i].second;
+    auto cost = match_cost(length, distance);
+    if (length != 0 &&
+        i + length < work.size() &&
+        work[i].cost + cost < work[i + length].cost) {
+      work[i + length].cost = work[i].cost + cost;
+      work[i + length].from = i;
     }
   }
   for (auto i = data.size(); i > 0;) {
     work[work[i].from].to = i;
     i = work[i].from;
   }
-  std::vector<Word<T>> ret{};
+  std::vector<Word<T>> ret(data.size());
+  std::size_t j = 0;
   for (std::size_t i = 0; i < data.size();) {
     Word<T> word{};
+    word.position = i;
     word.start = matched_length[i].second;
-    if (work[i].to == i + 1) {
-      word.length = 0;
-    } else {
-      word.length = matched_length[i].first;
+    word.length = work[i].to - i - 1;
+    if (word.length == 0) {
+      word.start = 0;
     }
     word.character = data[work[i].to - 1];
-    ret.push_back(word);
+    ret[j] = word;
+    j++;
     i = work[i].to;
   }
+  ret.resize(j);
+  return std::make_pair(ret, data.size());
+}
+
+template <typename T>
+auto Decode(const std::vector<Word<T>>& data, std::size_t length) {
+  std::vector<T> ret(length);
+  std::size_t k = 0;
+  for (std::size_t i = 0; i < data.size(); i++) {
+    for (std::size_t j = 0; j < data[i].length; j++) {
+      ret[k] = ret[data[i].start + j];
+      k++;
+    }
+    ret[k] = data[i].character;
+    k++;
+  }
   return ret;
+}
+
+template <typename T>
+auto Decode(const std::pair<std::vector<Word<T>>, std::size_t>& pair) {
+  return Decode(pair.first, pair.second);
 }
 
 }  // namespace ZivLempel77
