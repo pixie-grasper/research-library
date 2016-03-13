@@ -30,10 +30,35 @@ namespace ZivLempel77 {
 
 /// \privatesection
 template <typename T>
-struct Word {
-  bool matched;
+struct Character {
   T character;
-  std::size_t first, length;
+  bool valid;
+
+  Character() : character{}, valid(false) {
+    return;
+  }
+
+  explicit Character(const T& ch) : character(ch), valid(true) {
+    return;
+  }
+
+  bool operator==(const Character<T>& ch) const {
+    if (valid && ch.valid) {
+      return character == ch.character;
+    } else {
+      return false;
+    }
+  }
+
+  bool operator<(const Character<T>& ch) const {
+    if (valid && ch.valid) {
+      return character < ch.character;
+    } else if (valid && !ch.valid) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 };
 
 template <typename T>
@@ -43,7 +68,9 @@ struct ExplicitState {
   // suffix link
   std::weak_ptr<ExplicitState<T>> f;
   // transitions
-  std::map<T, std::shared_ptr<ExplicitState<T>>> g;
+  std::map<Character<T>, std::shared_ptr<ExplicitState<T>>> g;
+  // parent
+  std::weak_ptr<ExplicitState<T>> parent;
 };
 
 template <typename T>
@@ -51,38 +78,8 @@ class SuffixTree {
  private:
   std::shared_ptr<ExplicitState<T>> root_state;
   std::vector<std::pair<std::size_t, std::size_t>> matched;
+  std::size_t window_width;
   static constexpr std::size_t infty = size_type<sizeof(std::size_t)>::max / 2;
-
-  void print(const std::vector<T>& data,
-             std::size_t index,
-             std::shared_ptr<ExplicitState<T>> state,
-             int color = 31) {
-    if (state == nullptr) {
-      fprintf(stderr, "(nil)");
-      return;
-    }
-    // branching-states have at least two transitions
-    if (!state->g.empty()) {
-      fprintf(stderr, "[1;%dm[[0m ", color);
-      for (auto i = state->k; i <= state->p && i <= data.size(); i++) {
-        fprintf(stderr, "%d ", data[i - 1]);
-      }
-      fprintf(stderr, "| ");
-      for (auto it = state->g.begin(); it != state->g.end();
-           ++it) {
-        print(data, index, it->second, color + 1);
-        fprintf(stderr, " ");
-      }
-      fprintf(stderr, "[1;%dm][0m", color);
-    } else {  // leaves have not transitions
-      fprintf(stderr, "[1;%dm([0m ", color);
-      for (auto i = state->k; i <= index + 1; i++) {
-        fprintf(stderr, "%d ", data[i - 1]);
-      }
-      fprintf(stderr, "[1;%dm)[0m", color);
-    }
-    return;
-  }
 
   auto create_state() {
     auto ret = std::make_shared<ExplicitState<T>>();
@@ -92,47 +89,48 @@ class SuffixTree {
     return ret;
   }
 
-  auto create_state(std::size_t k, std::size_t p, std::size_t depth) {
-    auto ret = std::make_shared<ExplicitState<T>>();
-    ret->k = k;
-    ret->p = p;
-    ret->depth = depth;
-    return ret;
-  }
-
   auto create_root_state() {
-    return create_state(1, 0, 0);
-  }
-
-  auto create_perp_state() {
-    return nullptr;
+    return create_state();
   }
 
   auto get_t_i(std::size_t i, const std::vector<T>& data) {
-    return data[i - 1];
+    if (i <= data.size()) {
+      return Character<T>(data[i - 1]);
+    } else {
+      return Character<T>();
+    }
   }
 
-  auto create_new_transition(std::shared_ptr<ExplicitState<T>> state,
-                             std::size_t k,
-                             std::size_t p,
-                             const std::vector<T>& data) {
-    if (state == nullptr) {
-      fprintf(stderr, "cannot create new transition because null.\n");
-      fprintf(stderr, "create_new_transition.2.\n");
-      return;
+  void update_range_to_root(std::shared_ptr<ExplicitState<T>> s,
+                            std::size_t k) {
+    while (s != nullptr) {
+      s->k = k - (s->p - s->k + 1);
+      s->p = k - 1;
+      k = s->k;
+      s = s->parent.lock();
     }
+    return;
+  }
+
+  void connect(std::shared_ptr<ExplicitState<T>> s,
+               std::size_t k,
+               std::size_t p,
+               std::shared_ptr<ExplicitState<T>> r,
+               const std::vector<T>& data) {
     auto t_k = get_t_i(k, data);
-    if (state->g.find(t_k) != state->g.end()) {
-      fprintf(stderr, "cannot create new transition because already exists.\n");
-      fprintf(stderr, "create_new_transition.1.\n");
-      return;
+    s->g[t_k] = r;
+    r->k = k;
+    r->p = p;
+    r->depth = s->depth + s->p - s->k + 1;
+    r->parent = s;
+    if (s->p != k - 1) {
+      update_range_to_root(s, k);
     }
-    state->g[t_k] = create_state(k, p, state->depth + state->p - state->k + 1);
     return;
   }
 
   auto has_a_transition(std::shared_ptr<ExplicitState<T>> state,
-                        const T& a) {
+                        const Character<T>& a) {
     if (state == nullptr) {
       // perp-state . a -> root-state where any a in the alphabet
       return true;
@@ -160,6 +158,26 @@ class SuffixTree {
     }
   }
 
+  void update_matched(std::shared_ptr<ExplicitState<T>> s, std::size_t i) {
+    auto matched_length = s->depth + s->p - s->k + 1;
+    auto matched_from = i - matched_length - 1;
+    auto matched_to = s->k - s->depth - 1;
+    while (matched_to + window_width < i) {
+      s = s->parent.lock();
+      if (s == nullptr) {
+        return;
+      }
+      matched_length = s->depth + s->p - s->k + 1;
+      matched_from = i - matched_length - 1;
+      matched_to = s->k - s->depth - 1;
+    }
+    if (matched[matched_from].first < matched_length) {
+      matched[matched_from].first = matched_length;
+      matched[matched_from].second = s->k - s->depth - 1;
+    }
+    return;
+  }
+
   auto update(std::shared_ptr<ExplicitState<T>> s,
               std::size_t k,
               std::size_t i,
@@ -175,7 +193,9 @@ class SuffixTree {
     // while not (end-point) do
     while (!end_point) {
       // creawte new transition g'(r, i, infty) = r' where r' is a new state;
-      create_new_transition(r, i, infty, data);
+      update_matched(r, i);
+      auto r_prime = create_state();
+      connect(r, i, infty, r_prime, data);
       // if oldr != root then create new suffix link f'(oldr) = r;
       if (old_r != root_state) {
         old_r->f = r;
@@ -202,7 +222,7 @@ class SuffixTree {
   auto test_and_split(std::shared_ptr<ExplicitState<T>> s,
                       std::size_t k,
                       std::size_t p,
-                      const T& t,
+                      const Character<T>& t,
                       const std::vector<T>& data) {
     // if k <= p then
     if (k <= p) {
@@ -219,16 +239,8 @@ class SuffixTree {
         // g'(s, k', k'+p-k) = r and g'(r, k'+p-k+1, p') = s'
         // where r is a new state;
         auto r = create_state();
-        auto t_k = get_t_i(k, data);
-        auto t_kpk1 = get_t_i(k_prime + p - k + 1, data);
-        s->g[t_k] = r;
-        r->k = k_prime;
-        r->p = k_prime + p - k;
-        r->depth = s->depth + s->p - s->k + 1;
-        r->g[t_kpk1] = s_prime;
-        s_prime->k = k_prime + p - k + 1;
-        s_prime->p = p_prime;
-        s_prime->depth = r->depth + r->p - r->k + 1;
+        connect(s, k_prime, k_prime + p - k, r, data);
+        connect(r, k_prime + p - k + 1, p_prime, s_prime, data);
         // return (false, r)
         return std::make_pair(false, r);
       }
@@ -258,7 +270,6 @@ class SuffixTree {
       auto k_prime = pair.second.first;
       auto p_prime = pair.second.second;
       // while p'-k' <= p - k do
-      // while (ssize_t(p_prime - k_prime) <= ssize_t(p - k)) {
       while (p_prime + k <= p + k_prime) {
         // k <- k + p' - k' + 1;
         k = k + p_prime - k_prime + 1;
@@ -294,7 +305,7 @@ class SuffixTree {
           edge = explicit_state->k - 1;
         }
       } else {
-        if (data[edge + length] == ch) {
+        if (data[edge + length] == ch.character) {
           left_index++;
           length++;
         } else {
@@ -306,12 +317,15 @@ class SuffixTree {
   }
 
  public:
+  SuffixTree() = default;
+
+  // construct suffix-tree with the Ukkonen's Algorithm
   // construction of STree(T) for string T = t_1 t_2 ... #
   // in alphabet Sigma = {t_-1, ..., t_-m}; # is the end marker
   // not appearing elsewhere in T.
-  SuffixTree(const std::vector<T>& data, std::size_t minimum_length)
-      : root_state(nullptr),
-        matched(data.size()) {
+  void build(const std::vector<T>& data, std::size_t ww) {
+    matched.resize(data.size());
+    window_width = ww;
     // create state root and perp;
     root_state = create_root_state();
     // create suffix link f'(root) = perp;
@@ -320,30 +334,33 @@ class SuffixTree {
     auto s = root_state;
     // k <- 1;
     std::size_t k = 1;
-    for (std::size_t i = 1; i <= data.size(); i++) {
+    for (std::size_t i = 1; i <= data.size() + 1; i++) {
       auto pair_1 = update(s, k, i, data);
       s = pair_1.first;
       k = pair_1.second;
       auto pair_2 = canonize(s, k, i, data);
       s = pair_2.first;
       k = pair_2.second;
-      for (std::size_t j = 1; j <= i; j++) {
-        auto found = find(data, j, i);
-        if (!found) {
-          fprintf(stderr, "error - %zu:%zu = ", j, i);
-          for (auto h = j; h <= i; h++) {
-            fprintf(stderr, "%d ", data[h]);
+#if 0
+      // test
+      auto j = i - window_width + 1;
+      if (i < window_width) {
+        j = 1;
+      }
+      if (i != data.size() + 1) {
+        auto errored = false;
+        for (; j <= i; j++) {
+          auto found = find(data, j, i);
+          if (!found) {
+            errored = true;
+            fprintf(stderr, "error - %zu:%zu\n", j, i);
           }
-          fprintf(stderr, "\n");
+        }
+        if (errored) {
         }
       }
-    }
-#if 0
-    for (std::size_t i = 0; i < data.size(); i++) {
-      fprintf(stderr, "%zu %zu %d %zu\n",
-          matched[i].first, matched[i].second, data[i], i);
-    }
 #endif
+    }
     return;
   }
 
@@ -353,9 +370,72 @@ class SuffixTree {
 };
 
 template <typename T>
-auto Encode(const std::vector<T>& data, std::size_t minimum_length) {
-  SuffixTree<T> tree(data, minimum_length);
+struct Word {
+  std::size_t start, length;
+  T character;
+};
+
+template <typename T>
+struct Work {
+  unsigned_integer_t cost;
+  std::size_t from, to;
+
+  Work() : cost(size_type<unsigned_integer_size>::max),
+           from(0),
+           to(0) {
+    return;
+  }
+};
+
+template <typename T>
+auto Encode(const std::vector<T>& data,
+            std::size_t minimum_length,
+            std::size_t window_width) {
+  SuffixTree<T> tree{};
+  tree.build(data, window_width);
+  auto&& matched_length = tree.get();
+  for (std::size_t i = 0; i < matched_length.size(); i++) {
+    if (matched_length[i].first < minimum_length) {
+      matched_length[i].first = 0;
+    }
+  }
+  std::vector<Work<T>> work(data.size() + 1);
+  auto unmatch_cost = [=](std::size_t) -> unsigned_integer_t {
+    return 1;
+  };
+  auto match_cost = [=](std::size_t) -> unsigned_integer_t {
+    return 1;
+  };
+  work[0].cost = 0;
+  for (std::size_t i = 0; i < data.size(); i++) {
+    if (work[i].cost + unmatch_cost(i) < work[i + 1].cost) {
+      work[i + 1].cost = work[i].cost + unmatch_cost(i);
+      work[i + 1].from = i;
+    }
+    if (matched_length[i].first != 0 &&
+        i + matched_length[i].first < work.size() &&
+        work[i].cost + match_cost(i) < work[i + matched_length[i].first].cost) {
+      work[i + matched_length[i].first].cost = work[i].cost + match_cost(i);
+      work[i + matched_length[i].first].from = i;
+    }
+  }
+  for (auto i = data.size(); i > 0;) {
+    work[work[i].from].to = i;
+    i = work[i].from;
+  }
   std::vector<Word<T>> ret{};
+  for (std::size_t i = 0; i < data.size();) {
+    Word<T> word{};
+    word.start = matched_length[i].second;
+    if (work[i].to == i + 1) {
+      word.length = 0;
+    } else {
+      word.length = matched_length[i].first;
+    }
+    word.character = data[work[i].to - 1];
+    ret.push_back(word);
+    i = work[i].to;
+  }
   return ret;
 }
 
