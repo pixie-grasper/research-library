@@ -33,6 +33,7 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 - Range Coder (Static, Adaptive)
 - Unary Coding
 - Wavelet Transform (Haar, CDF 5/3, CDF 9/7)
+- Ziv-Lempel 77 Algorithm
 
 が既に実装されています。又、
 
@@ -51,7 +52,7 @@ $ make docs
 ## TODO
 以下のアルゴリズムを実装する予定です。
 
-- Ziv-Lempel 77 Algorithm
+- Lempel-Ziv-Storer-Szymanski
 
 ## NOT TODO
 以下のアルゴリズムは宗教的な理由により実装*しない*予定です。
