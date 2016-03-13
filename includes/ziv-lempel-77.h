@@ -340,6 +340,16 @@ struct Work {
   }
 };
 
+/// \publicsection
+/// \fn Encode(const std::vector<T>& data,
+///            std::size_t minimum_length,
+///            std::size_t window_width)
+/// \brief Ziv-Lempel 77 Encode Function
+/// \param[in] data sequence
+/// \param[in] minimum_length supre border of the length
+/// \param[in] window_width width of the window
+/// \return \c std::pair of tuple as \c std::vector<Word<T>> and
+///         length of the original sequence
 template <typename T>
 auto Encode(const std::vector<T>& data,
             std::size_t minimum_length,
@@ -439,6 +449,11 @@ auto Encode(const std::vector<T>& data,
   return std::make_pair(ret, data.size());
 }
 
+/// \fn Decode(const std::vector<Word<T>>& data, std::size_t length)
+/// \brief Ziv-Lempel 77 Decode Function
+/// \param[in] data tuple sequence
+/// \param[in] length length of the original sequence
+/// \return decoded sequence
 template <typename T>
 auto Decode(const std::vector<Word<T>>& data, std::size_t length) {
   std::vector<T> ret(length);
@@ -454,6 +469,11 @@ auto Decode(const std::vector<Word<T>>& data, std::size_t length) {
   return ret;
 }
 
+/// \fn Decode(const std::pair<std::vector<Word<T>>, std::size_t>& pair)
+/// \brief Ziv-Lempel 77 Decode Function
+/// \param[in] pair \c std::pair of tuple sequence and
+///            length of the original sequence
+/// \return decoded sequence
 template <typename T>
 auto Decode(const std::pair<std::vector<Word<T>>, std::size_t>& pair) {
   return Decode(pair.first, pair.second);
