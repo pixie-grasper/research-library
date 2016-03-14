@@ -14,6 +14,7 @@ int gets();
 #include <memory>
 #include <utility>
 #include <algorithm>
+#include <cmath>
 
 #ifdef RESEARCHLIB_OFFLINE_TEST
 #include "./size-type.h"
@@ -396,7 +397,7 @@ auto Encode(const std::vector<T>& data,
       if (distance <= 4) {
         return 5;
       } else {
-        return 3 + unsigned_integer_t(ceil(log2(distance)));
+        return 3 + unsigned_integer_t(std::ceil(std::log2(distance)));
       }
     };
     return length_cost(l) + distance_cost(d);
