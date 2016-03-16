@@ -63,7 +63,7 @@ tests/multiple.h: $(LIBS)
 
 .PHONY: clean
 clean:
-	rm -rf $(OBJS) $(EXES) $(DEPS) dummy.out
+	rm -rf $(OBJS) $(EXES) $(DEPS) dummy.out Doxyfile tests/multiple1.d tests/multiple1.o tests/multiple2.d tests/multiple2.o tests/multiple.h
 
 .PHONY: sync
 sync:
