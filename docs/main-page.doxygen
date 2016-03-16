@@ -30,17 +30,11 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 #include <stdint.h>
 #include <sys/stat.h>
 #include <prediction-by-partial-matching.h>
+#include <file.h>
 #include <vector>
 
 int main() {
-  auto file_name = "1.dat";
-  struct stat fst{};
-  stat(file_name, &fst);
-  std::vector<uint8_t> buffer(fst.st_size);
-  auto f = fopen(file_name, "r");
-  fread(&buffer[0], sizeof(uint8_t), buffer.size(), f);
-  fclose(f);
-
+  auto buffer = ResearchLibrary::File::load("1.dat");
   auto ppm = ResearchLibrary::PredictionByPartialMatching::NumericEncode<MethodC, 4>(buffer);
   printf("%zu -> %zu\n", buffer.size(), ppm.first.size());
   return 0;
