@@ -5,3 +5,4 @@
 *.out
 html/
 Doxyfile
+tests/multiple.h
