@@ -40,8 +40,12 @@ uninstall:
 	$(RM) -rf $(INSTALL_DIR)
 
 .PHONY: docs
-docs:
+docs: Doxyfile
 	doxygen Doxyfile
+
+Doxyfile: Doxyfile.patch
+	doxygen -g $@
+	patch $@ < $<
 
 %.out: %.o
 	$(LINK) $< -o $@ $(LIBCPP) -lm
