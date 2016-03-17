@@ -40,6 +40,7 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 - size\_type\_t型: テンプレート引数としてコンパイル時に決定可能な整数の1, 2, 4, 8を許し、その大きさの符号なし整数型を表す
 - BitsToBytes class: ビットストリームをバイトストリームに変換する為のクラス
 - BytesToBits class: バイトストリームからビットストリームを切り出す為のクラス
+- File class: ファイルとstd::vector\<std::uint8_t\>を相互に変換する為のクラス
 
 が利用できます。詳しい使い方に関しては
 
