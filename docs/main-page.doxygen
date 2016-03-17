@@ -25,21 +25,7 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 する事によって各種アルゴリズムを利用できるようになります。
 
 例えば、
-\code
-#include <stdio.h>
-#include <stdint.h>
-#include <sys/stat.h>
-#include <prediction-by-partial-matching.h>
-#include <file.h>
-#include <vector>
-
-int main() {
-  auto buffer = ResearchLibrary::File::load("1.dat");
-  auto ppm = ResearchLibrary::PredictionByPartialMatching::NumericEncode<MethodC, 4>(buffer);
-  printf("%zu -> %zu\n", buffer.size(), ppm.first.size());
-  return 0;
-}
-\endcode
+\includelineno "example.cc"
 と書いて、
 \code
 $ clang++ `pkg-config --cflags libresearch` foo.cc -o foo
