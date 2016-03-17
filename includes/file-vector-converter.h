@@ -1,10 +1,10 @@
 // Copyright 2015 pixie.grasper
-/// \file file.h
+/// \file file-vector-converter.h
 /// \brief Useful File reader/writer.
 /// \author pixie.grasper
 
-#ifndef INCLUDES_FILE_H_
-#define INCLUDES_FILE_H_
+#ifndef INCLUDES_FILE_VECTOR_CONVERTER_H_
+#define INCLUDES_FILE_VECTOR_CONVERTER_H_
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -148,4 +148,4 @@ class File {
 
 }  // namespace ResearchLibrary
 
-#endif  // INCLUDES_FILE_H_
+#endif  // INCLUDES_FILE_VECTOR_CONVERTER_H_
