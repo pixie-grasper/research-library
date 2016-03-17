@@ -35,10 +35,27 @@ class File {
  public:
   File() = default;
 
+  /// \fn File(const File&)
+  /// \brief default copy constructor
+  File(const File&) = default;
+
+  /// \fn File(File&&)
+  /// \brief default move constructor
+  File(File&&) = default;
+
   /// \fn File(const char* name)
   /// \brief constructor
   /// \param[in] name name of the file
   explicit File(const char* name) : file_name(name), buffer{} {
+    load();
+    return;
+  }
+
+  /// \fn File(std::vector<uint8_t>&& contents)
+  /// \brief constructor
+  /// \param[in] contents buffer contains sequence
+  explicit File(std::vector<uint8_t>&& contents)
+    : file_name(nullptr), buffer(std::move(contents)) {
     return;
   }
 
@@ -53,14 +70,14 @@ class File {
   /// \fn get()
   /// \brief get the buffer
   /// \return \c std::vector<std::uint8_t>
-  auto& get() {
+  std::vector<std::uint8_t>& get() {
     return buffer;
   }
 
   /// \fn load(void)
   /// \brief load from the file
   /// \return \c std::vector<std::uint8_t>
-  auto& load() {
+  std::vector<std::uint8_t>& load() {
     buffer.resize(0);
     auto fd = open(file_name, O_RDONLY);
     if (fd == -1) {
@@ -80,9 +97,9 @@ class File {
   /// \brief load from the file
   /// \param[in] file_name name of the file
   /// \return \c std::vector<std::uint8_t>
-  static auto load(const char* file_name) {
+  static std::vector<std::uint8_t> load(const char* file_name) {
     File file(file_name);
-    return file.load();
+    return file.get();
   }
 
   /// \fn save(void)
