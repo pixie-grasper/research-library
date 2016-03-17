@@ -20,7 +20,7 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 する事によって各種アルゴリズムを利用できるようになります。
 例えば、1.datから系列を読み込んでPPM法で符号化するには、次のように書きます。
 
-```example.cc
+```c_cpp
 #include <stdio.h>
 #include <prediction-by-partial-matching.h>
 #include <file-vector-converter.h>
