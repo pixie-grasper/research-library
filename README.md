@@ -4,7 +4,7 @@
 実装言語はC++14を用い、clangでコンパイルでき、追加のライブラリを必要とせず、MITライセンスで提供しています。
 
 ## どう使うの？
-```
+```bash
 $ git clone https://github.com/pixie-grasper/research-library.git
 $ cd research-library
 $ make check
@@ -13,11 +13,25 @@ $ sudo make install
 
 した後に
 
-```
+```bash
 $ clang++ `pkg-config --cflags libresearch` foo.cc
 ```
 
 する事によって各種アルゴリズムを利用できるようになります。
+例えば、1.datから系列を読み込んでPPM法で符号化するには、次のように書きます。
+
+```c++ example.cc
+#include <stdio.h>
+#include <prediction-by-partial-matching.h>
+#include <file-vector-converter.h>
+
+int main() {
+  auto buffer = ResearchLibrary::File::load("1.dat");
+  auto ppm = ResearchLibrary::PredictionByPartialMatching::NumericEncode<MethodC, 4>(buffer);
+  printf("%zu -> %zu\n", buffer.size(), ppm.first.size());
+  return 0;
+}
+```
 
 ## 何ができるの？
 - Adler-32 Check Sum Function
@@ -44,7 +58,7 @@ $ clang++ `pkg-config --cflags libresearch` foo.cc
 
 が利用できます。詳しい使い方に関しては
 
-```
+```bash
 $ make docs
 ```
 
