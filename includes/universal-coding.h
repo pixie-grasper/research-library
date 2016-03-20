@@ -1,5 +1,5 @@
 // Copyright 2015 pixie.grasper
-/// \file range-coder.h
+/// \file universal-coding.h
 /// \brief Implementation of the Universal Coding
 /// \author pixie.grasper
 
