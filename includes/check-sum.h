@@ -60,13 +60,13 @@ auto CRC32(const std::vector<std::uint8_t>& data, const T& start) {
   return ~c;
 }
 
-/// \fn Alder32(const std::vector<std::uint8_t>& data, const T& start)
-/// \brief Alder-32 Check Sum Function
+/// \fn Adler32(const std::vector<std::uint8_t>& data, const T& start)
+/// \brief Adler-32 Check Sum Function
 /// \param[in] data sequence
 /// \param[in] start initial value of the calculation. Usually, equals to 1.
 /// \return alder-32 check-sum
 template <typename T>
-auto Alder32(const std::vector<std::uint8_t>& data, const T& start) {
+auto Adler32(const std::vector<std::uint8_t>& data, const T& start) {
   auto s1 = size_type_t<4>(start) & 0xffff;
   auto s2 = (size_type_t<4>(start) >> 16) & 0xffff;
   for (std::size_t i = 0; i < data.size(); i++) {
