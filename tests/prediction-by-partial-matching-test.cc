@@ -8,7 +8,7 @@
 int main() {
   std::vector<int> buffer(1000);
   unsigned int seed = 10;
-  for (size_t i = 0; i < buffer.size(); i++) {
+  for (std::size_t i = 0; i < buffer.size(); i++) {
     buffer[i] = rand_r(&seed) % 100;
   }
 

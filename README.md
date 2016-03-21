@@ -42,6 +42,7 @@ int main() {
 - Fast Fourier Transform
 - Golomb Coding
 - Huffman Coding
+- Lempel-Ziv-Storer-Szymanski Algorithm
 - Move To Front
 - Prediction by Partial Matching
 - Range Coder (Static, Adaptive)
@@ -67,7 +68,7 @@ $ make docs
 ## TODO
 以下のアルゴリズムを実装する予定です。
 
-- Lempel-Ziv-Storer-Szymanski
+- Deflate
 
 ## NOT TODO
 以下のアルゴリズムは宗教的な理由により実装*しない*予定です。

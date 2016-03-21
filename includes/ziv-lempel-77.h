@@ -363,53 +363,12 @@ auto Encode(const std::vector<T>& data,
       matched_length[i].first = 0;
     }
   }
-#if 1
-  // DEFLATE's fixed Huffman code table
-  auto unmatch_cost = [=](std::size_t i) -> unsigned_integer_t {
-    auto t = data[i];
-    if (t <= 143) {
-      return 8;
-    } else {
-      return 9;
-    }
-  };
-  auto match_cost = [](std::size_t l, std::size_t d) {
-    auto length_cost = [](std::size_t length) -> unsigned_integer_t {
-      if (length <= 10) {
-        return 7;
-      } else if (length <= 18) {
-        return 8;
-      } else if (length <= 34) {
-        return 9;
-      } else if (length <= 66) {
-        return 10;
-      } else if (length <= 114) {
-        return 11;
-      } else if (length <= 130) {
-        return 12;
-      } else if (length <= 257) {
-        return 13;
-      } else {
-        return 8;
-      }
-    };
-    auto distance_cost = [](std::size_t distance) -> unsigned_integer_t {
-      if (distance <= 4) {
-        return 5;
-      } else {
-        return 3 + unsigned_integer_t(std::ceil(std::log2(distance)));
-      }
-    };
-    return length_cost(l) + distance_cost(d);
-  };
-#else
   auto unmatch_cost = [](std::size_t) -> unsigned_integer_t {
     return 1;
   };
   auto match_cost = [](std::size_t, std::size_t) -> unsigned_integer_t {
     return 1;
   };
-#endif
   std::vector<Work<T>> work(data.size() + 1);
   work[0].cost = 0;
   for (std::size_t i = 0; i < data.size(); i++) {
