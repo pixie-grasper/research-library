@@ -1,5 +1,7 @@
 // Copyright 2015 pixie.grasper
 
+#include <cstdlib>
+
 #include "../includes/lempel-ziv-storer-szymanski.h"
 
 int main() {
