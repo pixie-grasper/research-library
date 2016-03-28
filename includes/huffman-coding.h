@@ -143,48 +143,94 @@ struct HuffmanNode {
   }
 };
 
-/// \publicsection
-/// \fn Encode(const std::vector<T>& data,
-///            const std::map<T, std::pair<unsigned_integer_t,
-///                                        unsigned_integer_t>>& code_map)
-/// \brief Huffman Coding Encode Function
-/// \param[in] data sequence
-/// \param[in] code_map code-map as \c std::map<T, std::pair<unsigned_integer_t,
-///            unsigned_integer_t>> that maps to \c std::pair of length of the
-///            code and the code.
-/// \return encoded sequence as std::vector<std::uint8_t>
 template <typename T>
-auto Encode(const std::vector<T>& data,
-            const std::map<T, std::pair<unsigned_integer_t,
-                                        unsigned_integer_t>>& code_map) {
-  BitsToBytes<8> buffer{};
-  for (std::size_t i = 0; i < data.size(); i++) {
-    auto it = code_map.find(data[i]);
-    if (it == code_map.end()) {
-      std::cerr << "word not in the dictionary." << std::endl;
-      continue;
+auto length_map_from_data_numeric(const std::vector<T>& data,
+                                  std::size_t max_length = 0) {
+  auto max = data[0];
+  for (std::size_t i = 1; i < data.size(); i++) {
+    if (max < data[i]) {
+      max = data[i];
     }
-    auto pair = it->second;
-    auto length = pair.first;
-    auto code = pair.second;
-    buffer.rput(code, length);
   }
-  return buffer.seek_to_byte_boundary();
+  auto N = std::size_t(max) + 1;
+  std::vector<unsigned_integer_t> freq(N);
+  for (std::size_t i = 0; i < data.size(); i++) {
+    freq[std::size_t(data[i])]++;
+  }
+  auto shift_width = 0;
+length_map_from_data_numeric_l1:
+  std::vector<unsigned_integer_t> freq_array(N * 2);
+  for (std::size_t i = 0; i < N; i++) {
+    freq_array[i] = N + i;
+    freq_array[N + i] = freq[i];
+    if (shift_width != 0 && freq[i] != 0) {
+      auto mask = std::size_t(1) << (shift_width - 1);
+      freq_array[N + i] = (freq_array[N + i] + mask) >> shift_width;
+      if (freq_array[N + i] == 0) {
+        freq_array[N + i] = 1;
+      }
+    }
+  }
+  for (std::size_t i = (N - 1) / 2; i + 1 >= 1; i--) {
+    freq_array = make_heap_for_huffman_coding(std::move(freq_array), i, N);
+  }
+
+  auto h = N;
+  while (h - 1 > 0) {
+    auto m1 = freq_array[0];
+    freq_array[0] = freq_array[h - 1];
+    h--;
+    freq_array = make_heap_for_huffman_coding(std::move(freq_array), 0, h);
+    auto m2 = freq_array[0];
+    freq_array[h] = freq_array[m1] + freq_array[m2];
+    freq_array[0] = freq_array[m1] = freq_array[m2] = h;
+    freq_array = make_heap_for_huffman_coding(std::move(freq_array), 0, h);
+  }
+
+  freq_array[1] = 0;
+  for (std::size_t i = 3; i < freq_array.size(); i++) {
+    freq_array[i] = freq_array[freq_array[i]] + 1;
+  }
+
+  std::map<T, unsigned_integer_t> length_map{};
+  std::size_t length_max = 0;
+  for (std::size_t i = 0; i < N; i++) {
+    if (freq[i] != 0) {
+      length_map[T(i)] = freq_array[N + i];
+      if (length_max < length_map[T(i)]) {
+        length_max = length_map[T(i)];
+      }
+    }
+  }
+  if (max_length != 0 && length_max > max_length) {
+    shift_width++;
+    goto length_map_from_data_numeric_l1;
+  }
+  return length_map;
 }
 
-/// \fn Encode(const std::vector<T>& data)
-/// \brief Huffman Coding Encode Function
-/// \param[in] data sequence
-/// \return \c std::pair of encoded sequence as std::vector<std::uint8_t> and
-///         \c std::pair of length of the original sequence and
-///         \c std::map<T,std::pair<unsigned_integer_t,unsigned_integer_t>>
-///         that maps to \c std::pair of length of the code and the code
 template <typename T>
-auto Encode(const std::vector<T>& data) {
+auto length_map_from_data(const std::vector<T>& data,
+                          std::size_t max_length = 0) {
   // calculate frequency-map
-  std::map<T, unsigned_integer_t> frequency_map;
+  std::map<T, unsigned_integer_t> freq{};
   for (std::size_t i = 0; i < data.size(); i++) {
-    frequency_map[data[i]]++;
+    freq[data[i]]++;
+  }
+
+  auto shift_width = 0;
+length_map_from_data_l1:
+  std::map<T, unsigned_integer_t> frequency_map{};
+  for (auto it = freq.begin(); it != freq.end(); ++it) {
+    auto value = it->second;
+    if (shift_width != 0) {
+      auto mask = std::size_t(1) << (shift_width - 1);
+      value = (value + mask) >> shift_width;
+      if (value == 0) {
+        value = 1;
+      }
+    }
+    frequency_map[it->first] = value;
   }
 
   // make the huffman-tree using priority-queue
@@ -226,10 +272,56 @@ auto Encode(const std::vector<T>& data) {
       p->right->length = p->length + 1;
       set.insert(p->right);
     } else {
+      if (max_length != 0 && p->length > max_length) {
+        shift_width++;
+        goto length_map_from_data_l1;
+      }
       length_map[p->value.first] = p->length;
     }
   }
 
+  return length_map;
+}
+
+/// \publicsection
+/// \fn Encode(const std::vector<T>& data,
+///            const std::map<T, std::pair<unsigned_integer_t,
+///                                        unsigned_integer_t>>& code_map)
+/// \brief Huffman Coding Encode Function
+/// \param[in] data sequence
+/// \param[in] code_map code-map as \c std::map<T, std::pair<unsigned_integer_t,
+///            unsigned_integer_t>> that maps to \c std::pair of length of the
+///            code and the code.
+/// \return encoded sequence as std::vector<std::uint8_t>
+template <typename T>
+auto Encode(const std::vector<T>& data,
+            const std::map<T, std::pair<unsigned_integer_t,
+                                        unsigned_integer_t>>& code_map) {
+  BitsToBytes<8> buffer{};
+  for (std::size_t i = 0; i < data.size(); i++) {
+    auto it = code_map.find(data[i]);
+    if (it == code_map.end()) {
+      std::cerr << "word not in the dictionary." << std::endl;
+      continue;
+    }
+    auto pair = it->second;
+    auto length = pair.first;
+    auto code = pair.second;
+    buffer.rput(code, length);
+  }
+  return buffer.seek_to_byte_boundary();
+}
+
+/// \fn Encode(const std::vector<T>& data)
+/// \brief Huffman Coding Encode Function
+/// \param[in] data sequence
+/// \return \c std::pair of encoded sequence as std::vector<std::uint8_t> and
+///         \c std::pair of length of the original sequence and
+///         \c std::map<T,std::pair<unsigned_integer_t,unsigned_integer_t>>
+///         that maps to \c std::pair of length of the code and the code
+template <typename T>
+auto Encode(const std::vector<T>& data) {
+  auto&& length_map = length_map_from_data(data);
   auto&& code_map = length_map_to_code_map(length_map);
   return std::make_pair(Encode(data, code_map),
          std::make_pair(data.size(), code_map));
@@ -263,45 +355,7 @@ auto NumericEncode(const std::vector<T>& data,
 ///         length map as \c std::map<T,unsigned_integer_t>
 template <typename T>
 auto NumericEncode(const std::vector<T>& data) {
-  auto max = data[0];
-  for (std::size_t i = 1; i < data.size(); i++) {
-    if (max < data[i]) {
-      max = data[i];
-    }
-  }
-  auto N = std::size_t(max) + 1;
-  std::vector<unsigned_integer_t> freq_array(N * 2);
-  for (std::size_t i = 0; i < N; i++) {
-    freq_array[i] = N + i;
-  }
-  for (std::size_t i = 0; i < data.size(); i++) {
-    freq_array[std::size_t(data[i]) + N]++;
-  }
-  for (std::size_t i = (N - 1) / 2; i + 1 >= 1; i--) {
-    freq_array = make_heap_for_huffman_coding(std::move(freq_array), i, N);
-  }
-
-  auto h = N;
-  while (h - 1 > 0) {
-    auto m1 = freq_array[0];
-    freq_array[0] = freq_array[h - 1];
-    h--;
-    freq_array = make_heap_for_huffman_coding(std::move(freq_array), 0, h);
-    auto m2 = freq_array[0];
-    freq_array[h] = freq_array[m1] + freq_array[m2];
-    freq_array[0] = freq_array[m1] = freq_array[m2] = h;
-    freq_array = make_heap_for_huffman_coding(std::move(freq_array), 0, h);
-  }
-
-  freq_array[1] = 0;
-  for (std::size_t i = 3; i < freq_array.size(); i++) {
-    freq_array[i] = freq_array[freq_array[i]] + 1;
-  }
-
-  std::map<T, unsigned_integer_t> length_map{};
-  for (std::size_t i = 0; i < N; i++) {
-    length_map[T(i)] = freq_array[N + i];
-  }
+  auto length_map = length_map_from_data_numeric(data);
   return std::make_pair(NumericEncode(data, length_map).first,
          std::make_pair(data.size(), length_map));
 }
