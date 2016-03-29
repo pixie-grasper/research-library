@@ -10,6 +10,7 @@
 int gets();
 /// \publicsection
 #include <vector>
+#include <array>
 #include <map>
 #include <memory>
 #include <utility>
@@ -20,11 +21,13 @@ int gets();
 #include "./size-type.h"
 #include "./bit-byte-converter.h"
 #include "./huffman-coding.h"
+#include "./ziv-lempel-77.h"
 #include "./lempel-ziv-storer-szymanski.h"
 #else
 #include <size-type.h>
 #include <bit-byte-converter.h>
 #include <huffman-coding.h>
+#include <ziv-lempel-77.h>
 #include <lempel-ziv-storer-szymanski.h>
 #endif
 
@@ -34,6 +37,10 @@ namespace ResearchLibrary {
 namespace Deflate {
 
 /// \privatesection
+struct DistanceCode {
+  std::size_t code, bits, distance, true_distance;
+};
+
 template <typename T>
 std::size_t lcode_from_word(LempelZivStorerSzymanski::Word<T> word) {
   if (word.matched) {
@@ -56,10 +63,6 @@ std::size_t lcode_from_word(LempelZivStorerSzymanski::Word<T> word) {
     return word.character;
   }
 }
-
-struct DistanceCode {
-  std::size_t code, bits, distance, true_distance;
-};
 
 template <typename = int>
 auto distance_to_code(std::size_t distance) {
@@ -87,16 +90,129 @@ auto distance_to_code(std::size_t distance) {
 
 template <typename = int>
 auto Encode(const std::vector<std::uint8_t>& source) {
-  auto lzss = LempelZivStorerSzymanski::Encode(source, 3, 258, 32768);
+  // build lempel-ziv-tree
+  std::size_t current_size = size_type<sizeof(std::size_t)>::max;
+  ZivLempel77::SuffixTree<std::uint8_t> tree{};
+  tree.build(source, 32768);
+  // trunk mathcing length
+  auto&& matched_length = tree.get();
+  for (std::size_t i = 0; i < matched_length.size(); i++) {
+    if (matched_length[i].first <= 3) {
+      matched_length[i].first = 0;
+    } else if (matched_length[i].first > 258 + 1) {
+      matched_length[i].first = 258 + 1;
+    }
+  }
+  // initialize literal/distance table as fixed huffman coding
+  std::vector<std::size_t> literal_length_table(288);
+  for (std::size_t i = 0; i <= 143; i++) {
+    literal_length_table[i] = 8;
+  }
+  for (std::size_t i = 144; i <= 255; i++) {
+    literal_length_table[i] = 9;
+  }
+  for (std::size_t i = 256; i <= 279; i++) {
+    literal_length_table[i] = 7;
+  }
+  for (std::size_t i = 280; i <= 287; i++) {
+    literal_length_table[i] = 8;
+  }
+  std::vector<std::size_t> distance_length_table(30);
+  for (std::size_t i = 0; i <= 29; i++) {
+    distance_length_table[i] = 5;
+  }
+  constexpr std::array<std::size_t, 259> length_to_code
+    = {{0, 0, 0, 257, 258, 259, 260, 261, 262, 263, 264,
+        265, 265, 266, 266, 267, 267, 268, 268,
+        269, 269, 269, 269, 270, 270, 270, 270,
+        271, 271, 271, 271, 272, 272, 272, 272,
+        273, 273, 273, 273, 273, 273, 273, 273,
+        274, 274, 274, 274, 274, 274, 274, 274,
+        275, 275, 275, 275, 275, 275, 275, 275,
+        276, 276, 276, 276, 276, 276, 276, 276,
+        277, 277, 277, 277, 277, 277, 277, 277,
+        277, 277, 277, 277, 277, 277, 277, 277,
+        278, 278, 278, 278, 278, 278, 278, 278,
+        278, 278, 278, 278, 278, 278, 278, 278,
+        279, 279, 279, 279, 279, 279, 279, 279,
+        279, 279, 279, 279, 279, 279, 279, 279,
+        280, 280, 280, 280, 280, 280, 280, 280,
+        280, 280, 280, 280, 280, 280, 280, 280,
+        281, 281, 281, 281, 281, 281, 281, 281,
+        281, 281, 281, 281, 281, 281, 281, 281,
+        281, 281, 281, 281, 281, 281, 281, 281,
+        281, 281, 281, 281, 281, 281, 281, 281,
+        282, 282, 282, 282, 282, 282, 282, 282,
+        282, 282, 282, 282, 282, 282, 282, 282,
+        282, 282, 282, 282, 282, 282, 282, 282,
+        282, 282, 282, 282, 282, 282, 282, 282,
+        283, 283, 283, 283, 283, 283, 283, 283,
+        283, 283, 283, 283, 283, 283, 283, 283,
+        283, 283, 283, 283, 283, 283, 283, 283,
+        283, 283, 283, 283, 283, 283, 283, 283,
+        284, 284, 284, 284, 284, 284, 284, 284,
+        284, 284, 284, 284, 284, 284, 284, 284,
+        284, 284, 284, 284, 284, 284, 284, 284,
+        284, 284, 284, 284, 284, 284, 284, 285}};
+  constexpr std::array<std::size_t, 29> literal_extra_bits
+    = {{0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+        1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
+        4, 4, 4, 4, 5, 5, 5, 5, 0}};
+Encode_l1:
+  // deside route
+  std::vector<ZivLempel77::Work<std::size_t>> work(source.size() + 1,
+  ZivLempel77::Work<std::size_t>());
+  for (std::size_t i = 0; i < source.size(); i++) {
+    auto unmatch_cost = literal_length_table[source[i]];
+    if (work[i].cost + unmatch_cost < work[i + 1].cost) {
+      work[i + 1].cost = work[i].cost + unmatch_cost;
+      work[i + 1].from = i;
+    }
+    if (matched_length[i].first != 0) {
+      auto length = matched_length[i].first - 1;
+      auto lcode = length_to_code[length];
+      auto dcode = distance_to_code(i - matched_length[i].second);
+      auto cost = literal_length_table[lcode] +
+                  literal_extra_bits[lcode - 257] +
+                  distance_length_table[dcode.code] +
+                  dcode.bits;
+      if (i + length < work.size() &&
+          work[i].cost + cost < work[i + length].cost) {
+        work[i + length].cost = work[i].cost + cost;
+        work[i + length].from = i;
+      }
+    }
+  }
+  for (auto i = source.size(); i > 0;) {
+    work[work[i].from].to = i;
+    i = work[i].from;
+  }
+  std::vector<LempelZivStorerSzymanski::Word<std::size_t>> lz;
+  for (std::size_t i = 0; i < source.size();) {
+    LempelZivStorerSzymanski::Word<std::size_t> word{};
+    word.position = i;
+    word.start = matched_length[i].second;
+    word.length = work[i].to - i;
+    if (word.length == 1) {
+      word.start = 0;
+      word.character = source[i];
+      word.matched = false;
+    } else {
+      word.matched = true;
+    }
+    lz.push_back(word);
+    i = work[i].to;
+  }
+  // encode
   std::vector<std::size_t> literals{}, distances{};
   std::size_t max_literal = 257, max_distance = 1;
-  for (std::size_t i = 0; i < lzss.first.size(); i++) {
-    auto lcode = lcode_from_word(lzss.first[i]);
+  for (std::size_t i = 0; i < lz.size(); i++) {
+    auto lcode = lcode_from_word(lz[i]);
     if (max_literal < lcode) {
       max_literal = lcode;
     }
-    if (lzss.first[i].matched) {
-      auto distance = lzss.first[i].position - lzss.first[i].start;
+    if (lz[i].matched) {
+      auto distance = lz[i].position - lz[i].start;
       auto code = distance_to_code(distance);
       if (max_distance < distance) {
         max_distance = distance;
@@ -112,13 +228,6 @@ auto Encode(const std::vector<std::uint8_t>& source) {
   codes.insert(codes.end(), literals.begin(), literals.end());
   codes.insert(codes.end(), distances.begin(), distances.end());
   auto length_map = HuffmanCoding::length_map_from_data(codes, 15);
-  std::vector<std::size_t> literal_extra_bits = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
-                                                 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
-                                                 4, 4, 4, 4, 5, 5, 5, 5, 0};
-  std::vector<std::size_t> literal_extra_base
-    = { 3,  4,  5,   6,   7,   8,   9,  10,  11, 13,
-       15, 17, 19,  23,  27,  31,  35,  43,  51, 59,
-       67, 83, 99, 115, 131, 163, 195, 227, 258};
   std::vector<std::size_t> pack
     = {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
   std::vector<std::size_t> unpack
@@ -172,14 +281,18 @@ auto Encode(const std::vector<std::uint8_t>& source) {
                 length_code_map[l].first);
   }
   // actual compressed data of the block
-  for (std::size_t i = 0; i < lzss.first.size(); i++) {
-    auto l = lcode_from_word(lzss.first[i]);
-    if (lzss.first[i].matched) {
-      auto distance = lzss.first[i].position - lzss.first[i].start;
+  std::vector<std::size_t> literal_extra_base
+    = { 3,  4,  5,   6,   7,   8,   9,  10,  11, 13,
+       15, 17, 19,  23,  27,  31,  35,  43,  51, 59,
+       67, 83, 99, 115, 131, 163, 195, 227, 258};
+  for (std::size_t i = 0; i < lz.size(); i++) {
+    auto l = lcode_from_word(lz[i]);
+    if (lz[i].matched) {
+      auto distance = lz[i].position - lz[i].start;
       auto code = distance_to_code(distance);
       buffer.rput(literal_code_map[l].second, literal_code_map[l].first);
       if (literal_extra_bits[l - 257] != 0) {
-        buffer.put(lzss.first[i].length - literal_extra_base[l - 257],
+        buffer.put(lz[i].length - literal_extra_base[l - 257],
                    literal_extra_bits[l - 257]);
       }
       buffer.rput(distance_code_map[code.code].second,
@@ -192,7 +305,18 @@ auto Encode(const std::vector<std::uint8_t>& source) {
     }
   }
   buffer.rput(literal_code_map[256].second, literal_code_map[256].first);
-  return buffer.seek_to_byte_boundary();
+  auto&& ret = buffer.seek_to_byte_boundary();
+  if (current_size > ret.size()) {
+    current_size = ret.size();
+    for (std::size_t i = 0; i < literal_length_table.size(); i++) {
+      literal_length_table[i] = literal_length_map[i];
+    }
+    for (std::size_t i = 0; i < distance_length_table.size(); i++) {
+      distance_length_table[i] = distance_length_map[i];
+    }
+    goto Encode_l1;
+  }
+  return ret;
 }
 
 }  // namespace Deflate
