@@ -97,10 +97,14 @@ auto Encode(const std::vector<std::uint8_t>& source) {
   // trunk mathcing length
   auto&& matched_length = tree.get();
   for (std::size_t i = 0; i < matched_length.size(); i++) {
-    if (matched_length[i].first <= 3) {
-      matched_length[i].first = 0;
-    } else if (matched_length[i].first > 258 + 1) {
-      matched_length[i].first = 258 + 1;
+    for (auto it = matched_length[i].begin();
+              it != matched_length[i].end();
+              ++it) {
+      if (it->first <= 3) {
+        it->first = 0;
+      } else if (it->first > 258 + 1) {
+        it->first = 258 + 1;
+      }
     }
   }
   // initialize literal/distance table as fixed huffman coding
@@ -160,26 +164,29 @@ auto Encode(const std::vector<std::uint8_t>& source) {
         4, 4, 4, 4, 5, 5, 5, 5, 0}};
 Encode_l1:
   // deside route
-  std::vector<ZivLempel77::Work<std::size_t>> work(source.size() + 1,
-  ZivLempel77::Work<std::size_t>());
+  std::vector<ZivLempel77::Work<std::size_t>> work(source.size() + 1);
+  work[0].cost = 0;
   for (std::size_t i = 0; i < source.size(); i++) {
     auto unmatch_cost = literal_length_table[source[i]];
     if (work[i].cost + unmatch_cost < work[i + 1].cost) {
       work[i + 1].cost = work[i].cost + unmatch_cost;
       work[i + 1].from = i;
     }
-    if (matched_length[i].first != 0) {
-      auto length = matched_length[i].first - 1;
-      auto lcode = length_to_code[length];
-      auto dcode = distance_to_code(i - matched_length[i].second);
-      auto cost = literal_length_table[lcode] +
-                  literal_extra_bits[lcode - 257] +
-                  distance_length_table[dcode.code] +
-                  dcode.bits;
-      if (i + length < work.size() &&
-          work[i].cost + cost < work[i + length].cost) {
-        work[i + length].cost = work[i].cost + cost;
-        work[i + length].from = i;
+    for (std::size_t j = 0; j < matched_length[i].size(); j++) {
+      if (matched_length[i][j].first != 0) {
+        auto length = matched_length[i][j].first - 1;
+        auto lcode = length_to_code[length];
+        auto dcode = distance_to_code(i - matched_length[i][j].second);
+        auto cost = literal_length_table[lcode] +
+                    literal_extra_bits[lcode - 257] +
+                    distance_length_table[dcode.code] +
+                    dcode.bits;
+        if (i + length < work.size() &&
+            work[i].cost + cost < work[i + length].cost) {
+          work[i + length].cost = work[i].cost + cost;
+          work[i + length].start = matched_length[i][j].second;
+          work[i + length].from = i;
+        }
       }
     }
   }
@@ -191,13 +198,13 @@ Encode_l1:
   for (std::size_t i = 0; i < source.size();) {
     LempelZivStorerSzymanski::Word<std::size_t> word{};
     word.position = i;
-    word.start = matched_length[i].second;
     word.length = work[i].to - i;
     if (word.length == 1) {
       word.start = 0;
       word.character = source[i];
       word.matched = false;
     } else {
+      word.start = work[work[i].to].start;
       word.matched = true;
     }
     lz.push_back(word);

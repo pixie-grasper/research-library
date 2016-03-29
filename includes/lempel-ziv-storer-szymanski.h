@@ -58,10 +58,12 @@ auto Encode(const std::vector<T>& data,
   tree.build(data, window_width);
   auto&& matched_length = tree.get();
   for (std::size_t i = 0; i < matched_length.size(); i++) {
-    if (matched_length[i].first <= minimum_length) {
-      matched_length[i].first = 0;
-    } else if (matched_length[i].first > maximum_length + 1) {
-      matched_length[i].first = maximum_length + 1;
+    for (std::size_t j = 0; j < matched_length[i].size(); j++) {
+      if (matched_length[i][j].first <= minimum_length) {
+        matched_length[i][j].first = 0;
+      } else if (matched_length[i][j].first > maximum_length + 1) {
+        matched_length[i][j].first = maximum_length + 1;
+      }
     }
   }
   auto unmatch_cost = [](std::size_t) -> unsigned_integer_t {
@@ -77,26 +79,29 @@ auto Encode(const std::vector<T>& data,
       work[i + 1].cost = work[i].cost + unmatch_cost(i);
       work[i + 1].from = i;
     }
-    auto length = matched_length[i].first - 1;
-    auto distance = i - matched_length[i].second;
-    auto cost = match_cost(length, distance);
-    if (matched_length[i].first != 0 &&
-        i + length < work.size() &&
-        work[i].cost + cost < work[i + length].cost) {
-      work[i + length].cost = work[i].cost + cost;
-      work[i + length].from = i;
+    for (std::size_t j = 0; j < matched_length[i].size(); j++) {
+      if (matched_length[i][j].first != 0) {
+        auto length = matched_length[i][j].first - 1;
+        auto distance = i - matched_length[i][j].second;
+        auto cost = match_cost(length, distance);
+        if (i + length < work.size() &&
+            work[i].cost + cost < work[i + length].cost) {
+          work[i + length].cost = work[i].cost + cost;
+          work[i + length].start = matched_length[i][j].second;
+          work[i + length].from = i;
+        }
+      }
     }
   }
   for (auto i = data.size(); i > 0;) {
     work[work[i].from].to = i;
     i = work[i].from;
   }
-  std::vector<Word<T>> ret(data.size());
-  std::size_t j = 0;
+  std::vector<Word<T>> ret{};
   for (std::size_t i = 0; i < data.size();) {
     Word<T> word{};
     word.position = i;
-    word.start = matched_length[i].second;
+    word.start = work[work[i].to].start;
     word.length = work[i].to - i;
     if (word.length == 1) {
       word.start = 0;
@@ -105,11 +110,9 @@ auto Encode(const std::vector<T>& data,
     } else {
       word.matched = true;
     }
-    ret[j] = word;
-    j++;
+    ret.push_back(word);
     i = work[i].to;
   }
-  ret.resize(j);
   return std::make_pair(ret, data.size());
 }
 

@@ -78,7 +78,7 @@ template <typename T>
 class SuffixTree {
  private:
   std::shared_ptr<ExplicitState<T>> root_state;
-  std::vector<std::pair<std::size_t, std::size_t>> matched;
+  std::vector<std::vector<std::pair<std::size_t, std::size_t>>> matched;
   std::size_t window_width;
   static constexpr std::size_t infty = size_type<sizeof(std::size_t)>::max / 2;
 
@@ -172,9 +172,12 @@ class SuffixTree {
       matched_to = s->k - s->depth - 1;
       matched_length = s->depth + s->p - s->k + 1;
     }
-    if (matched[matched_from].first < matched_length) {
-      matched[matched_from].first = matched_length;
-      matched[matched_from].second = matched_to;
+    while (s != nullptr) {
+      matched_to = s->k - s->depth - 1;
+      matched_length = s->depth + s->p - s->k + 1;
+      matched[matched_from].push_back
+        (std::make_pair(matched_length, matched_to));
+      s = s->parent.lock();
     }
     return;
   }
@@ -332,10 +335,11 @@ struct Word {
 template <typename T>
 struct Work {
   unsigned_integer_t cost;
-  std::size_t from, to;
+  std::size_t from, start, to;
 
   Work() : cost(size_type<unsigned_integer_size>::max),
            from(0),
+           start(0),
            to(0) {
     return;
   }
@@ -359,8 +363,10 @@ auto Encode(const std::vector<T>& data,
   tree.build(data, window_width);
   auto&& matched_length = tree.get();
   for (std::size_t i = 0; i < matched_length.size(); i++) {
-    if (matched_length[i].first <= minimum_length) {
-      matched_length[i].first = 0;
+    for (std::size_t j = 0; j < matched_length[i].size(); j++) {
+      if (matched_length[i][j].first <= minimum_length) {
+        matched_length[i][j].first = 0;
+      }
     }
   }
   auto unmatch_cost = [](std::size_t) -> unsigned_integer_t {
@@ -376,14 +382,18 @@ auto Encode(const std::vector<T>& data,
       work[i + 1].cost = work[i].cost + unmatch_cost(i);
       work[i + 1].from = i;
     }
-    auto length = matched_length[i].first;
-    auto distance = i - matched_length[i].second;
-    auto cost = match_cost(length, distance);
-    if (length != 0 &&
-        i + length < work.size() &&
-        work[i].cost + cost < work[i + length].cost) {
-      work[i + length].cost = work[i].cost + cost;
-      work[i + length].from = i;
+    for (std::size_t j = 0; j < matched_length[i].size(); j++) {
+      if (matched_length[i][j].first != 0) {
+        auto length = matched_length[i][j].first;
+        auto distance = i - matched_length[i][j].second;
+        auto cost = match_cost(length, distance);
+        if (i + length < work.size() &&
+            work[i].cost + cost < work[i + length].cost) {
+          work[i + length].cost = work[i].cost + cost;
+          work[i + length].start = matched_length[i][j].second;
+          work[i + length].from = i;
+        }
+      }
     }
   }
   for (auto i = data.size(); i > 0;) {
@@ -395,7 +405,7 @@ auto Encode(const std::vector<T>& data,
   for (std::size_t i = 0; i < data.size();) {
     Word<T> word{};
     word.position = i;
-    word.start = matched_length[i].second;
+    word.start = work[work[i].to].start;
     word.length = work[i].to - i - 1;
     if (word.length == 0) {
       word.start = 0;
