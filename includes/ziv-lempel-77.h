@@ -47,7 +47,7 @@ struct Character {
     if (valid && ch.valid) {
       return character == ch.character;
     } else {
-      return false;
+      return valid == ch.valid;
     }
   }
 
@@ -164,6 +164,9 @@ class SuffixTree {
     auto matched_to = s->k - s->depth - 1;
     auto matched_length = s->depth + s->p - s->k + 1;
     auto matched_from = i - matched_length - 1;
+    if (matched_from >= matched.size()) {
+      return;
+    }
     while (matched_to + window_width < i) {
       s = s->parent.lock();
       if (s == nullptr) {
