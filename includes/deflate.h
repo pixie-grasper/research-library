@@ -88,6 +88,11 @@ auto distance_to_code(std::size_t distance) {
   return ret;
 }
 
+/// \publicsection
+/// \fn Encode(const std::vector<std::uint8_t>& source)
+/// \brief Deflate Function
+/// \param[in] source sequence
+/// \return deflated sequence as \c std::vector<std::uint8_t>
 template <typename = int>
 auto Encode(const std::vector<std::uint8_t>& source) {
   // build lempel-ziv-tree
@@ -235,10 +240,10 @@ Encode_l1:
   codes.insert(codes.end(), literals.begin(), literals.end());
   codes.insert(codes.end(), distances.begin(), distances.end());
   auto length_map = HuffmanCoding::length_map_from_data(codes, 15);
-  std::vector<std::size_t> pack
-    = {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
-  std::vector<std::size_t> unpack
-    = {3, 17, 15, 13, 11, 9, 7, 5, 4, 6, 8, 10, 12, 14, 16, 18, 0, 1, 2};
+  constexpr std::array<std::size_t, 19> pack
+    = {{16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15}};
+  constexpr std::array<std::size_t, 19> unpack
+    = {{3, 17, 15, 13, 11, 9, 7, 5, 4, 6, 8, 10, 12, 14, 16, 18, 0, 1, 2}};
 
   auto literal_length_map = HuffmanCoding::length_map_from_data(literals, 15);
   auto literal_code_map = HuffmanCoding
@@ -288,10 +293,10 @@ Encode_l1:
                 length_code_map[l].first);
   }
   // actual compressed data of the block
-  std::vector<std::size_t> literal_extra_base
-    = { 3,  4,  5,   6,   7,   8,   9,  10,  11, 13,
-       15, 17, 19,  23,  27,  31,  35,  43,  51, 59,
-       67, 83, 99, 115, 131, 163, 195, 227, 258};
+  constexpr std::array<std::size_t, 29> literal_extra_base
+    = {{ 3,  4,  5,   6,   7,   8,   9,  10,  11, 13,
+        15, 17, 19,  23,  27,  31,  35,  43,  51, 59,
+        67, 83, 99, 115, 131, 163, 195, 227, 258}};
   for (std::size_t i = 0; i < lz.size(); i++) {
     auto l = lcode_from_word(lz[i]);
     if (lz[i].matched) {
@@ -322,6 +327,183 @@ Encode_l1:
       distance_length_table[i] = distance_length_map[i];
     }
     goto Encode_l1;
+  }
+  return ret;
+}
+
+/// \fn Decode(const std::vector<std::uint8_t>& source)
+/// \brief Inflate Function
+/// \param[in] source sequence
+/// \return inflated sequence as \c std::vector<std::uint8_t>
+template <typename = int>
+auto Decode(const std::vector<std::uint8_t>& source) {
+  BytesToBits<8> buffer(source);
+  bool is_final = false;
+  std::vector<std::uint8_t> ret{};
+  constexpr std::array<std::size_t, 19> pack
+    = {{16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15}};
+  constexpr std::array<std::size_t, 29> literal_extra_bits
+    = {{0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+        1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
+        4, 4, 4, 4, 5, 5, 5, 5, 0}};
+  constexpr std::array<std::size_t, 29> literal_extra_base
+    = {{ 3,  4,  5,   6,   7,   8,   9,  10,  11, 13,
+        15, 17, 19,  23,  27,  31,  35,  43,  51, 59,
+        67, 83, 99, 115, 131, 163, 195, 227, 258}};
+  constexpr std::array<std::size_t, 30> distance_extra_bits
+    = {{ 0, 0,  0,  0,  1,  1,  2,  2,  3,  3,
+         4, 4,  5,  5,  6,  6,  7,  7,  8,  8,
+         9, 9, 10, 10, 11, 11, 12, 12, 13, 13}};
+  constexpr std::array<std::size_t, 30> distance_extra_base
+    = {{   1,    2,    3,    4,    5,    7,    9,    13,    17,    25,
+          33,   49,   65,   97,  129,  193,  257,   385,   513,   769,
+        1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577}};
+  while (!is_final) {
+    is_final = buffer.get(1);
+    auto type = buffer.get(2);
+    std::map<unsigned_integer_t, std::size_t> literal_length_map{};
+    std::map<unsigned_integer_t, std::size_t> distance_length_map{};
+    if (type == 0) {
+      buffer.seek_to_byte_boundary();
+      auto len = buffer.get(16);
+      auto nlen = buffer.get(16);
+      if ((len ^ nlen) != 0xffff) {
+        return ret;
+      }
+      for (std::size_t i = 0; i < len; i++) {
+        ret.push_back(static_cast<std::uint8_t>(buffer.get(8)));
+      }
+      continue;
+    } else if (type == 1) {
+      for (unsigned_integer_t i = 0; i <= 143; i++) {
+        literal_length_map[i] = 8;
+      }
+      for (unsigned_integer_t i = 144; i <= 255; i++) {
+        literal_length_map[i] = 9;
+      }
+      for (unsigned_integer_t i = 256; i <= 279; i++) {
+        literal_length_map[i] = 7;
+      }
+      for (unsigned_integer_t i = 280; i <= 287; i++) {
+        literal_length_map[i] = 8;
+      }
+      for (unsigned_integer_t i = 0; i <= 29; i++) {
+        distance_length_map[i] = 5;
+      }
+    } else if (type == 2) {
+      auto hlit = buffer.get(5);
+      auto hdist = buffer.get(5);
+      auto hclen = buffer.get(4);
+      std::map<unsigned_integer_t, std::size_t> length_length_map{};
+      for (unsigned_integer_t i = 0; i < hclen + 4; i++) {
+        auto length = buffer.get(3);
+        if (length != 0) {
+          length_length_map[pack[i]] = length;
+        }
+      }
+      auto length_code_map = HuffmanCoding
+                           ::length_map_to_code_map(length_length_map);
+      std::vector<std::size_t> length_map{};
+      for (; length_map.size() < hlit + hdist + 258;) {
+        unsigned_integer_t huffman_code = 0, code = 0;
+        std::size_t length = 0;
+        for (std::size_t j = 1; length == 0; j++) {
+          huffman_code = buffer.rget(1, huffman_code);
+          for (auto it = length_code_map.begin();
+                    it != length_code_map.end();
+                    ++it) {
+            if (it->second.first == j && it->second.second == huffman_code) {
+              length = j;
+              code = it->first;
+              break;
+            }
+          }
+        }
+        if (code < 16) {
+          length_map.push_back(code);
+        } else if (code == 16) {
+          if (length_map.size() == 0) {
+            return ret;
+          }
+          auto v = length_map.back();
+          auto t = buffer.get(2) + 3;
+          for (std::size_t i = 0; i < t; i++) {
+            length_map.push_back(v);
+          }
+        } else if (code == 17) {
+          auto t = buffer.get(3) + 3;
+          for (std::size_t i = 0; i < t; i++) {
+            length_map.push_back(0);
+          }
+        } else if (code == 18) {
+          auto t = buffer.get(7) + 11;
+          for (std::size_t i = 0; i < t; i++) {
+            length_map.push_back(0);
+          }
+        }
+      }
+      for (unsigned_integer_t i = 0; i < hlit + 257; i++) {
+        if (length_map[i] != 0) {
+          literal_length_map[i] = length_map[i];
+        }
+      }
+      for (unsigned_integer_t i = 0; i < hdist + 1; i++) {
+        if (length_map[i + hlit + 257] != 0) {
+          distance_length_map[i] = length_map[i + hlit + 257];
+        }
+      }
+    } else {
+      return ret;
+    }
+    auto literal_code_map = HuffmanCoding
+                          ::length_map_to_code_map(literal_length_map);
+    auto distance_code_map = HuffmanCoding
+                           ::length_map_to_code_map(distance_length_map);
+    for (;;) {
+      unsigned_integer_t huffman_code = 0, value = 0;
+      std::size_t length = 0, distance = 0;
+      for (std::size_t j = 1; length == 0; j++) {
+        huffman_code = buffer.rget(1, huffman_code);
+        for (auto it = literal_code_map.begin();
+                  it != literal_code_map.end();
+                  ++it) {
+          if (it->second.first == j && it->second.second == huffman_code) {
+            length = j;
+            value = it->first;
+            break;
+          }
+        }
+      }
+      if (value < 256) {
+        ret.push_back(static_cast<std::uint8_t>(value));
+      } else if (value == 256) {
+        break;
+      } else {
+        value -= 257;
+        length = literal_extra_base[value]
+               + buffer.get(literal_extra_bits[value]);
+        huffman_code = 0;
+        std::size_t code_length = 0;
+        for (std::size_t j = 1; code_length == 0; j++) {
+          huffman_code = buffer.rget(1, huffman_code);
+          for (auto it = distance_code_map.begin();
+                    it != distance_code_map.end();
+                    ++it) {
+            if (it->second.first == j && it->second.second == huffman_code) {
+              code_length = j;
+              value = it->first;
+              break;
+            }
+          }
+        }
+        distance = distance_extra_base[value]
+                 + buffer.get(distance_extra_bits[value]);
+        auto start = ret.size() - distance;
+        for (std::size_t i = 0; i < length; i++) {
+          ret.push_back(ret[start + i]);
+        }
+      }
+    }
   }
   return ret;
 }

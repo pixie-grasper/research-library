@@ -17,6 +17,12 @@ int main() {
     }
   }
 
-  ResearchLibrary::Deflate::Encode(buffer);
+  auto&& deflate = ResearchLibrary::Deflate::Encode(buffer);
+  auto&& inflate = ResearchLibrary::Deflate::Decode(deflate);
+  for (std::size_t i = 0; i < inflate.size(); i++) {
+    if (buffer[i] != inflate[i]) {
+      return 1;
+    }
+  }
   return 0;
 }
