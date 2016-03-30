@@ -4,6 +4,9 @@
 *.d
 *.o
 *.out
+*.orig
 html/
 Doxyfile
 tests/multiple.h
+lena-out.bmp
+lena-out.png

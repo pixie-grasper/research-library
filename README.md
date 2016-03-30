@@ -37,6 +37,7 @@ int main() {
 - Adler-32 Check Sum Function
 - Burrows Wheeler Transform (using Larsson-Sadakane's Algorithm)
 - CRC-32 Check Sum Function
+- Deflate/Inflate Function
 - Discrete Cosine Transform
 - Elias Coding
 - Fast Fourier Transform
@@ -56,6 +57,7 @@ int main() {
 - BitsToBytes class: ビットストリームをバイトストリームに変換する為のクラス
 - BytesToBits class: バイトストリームからビットストリームを切り出す為のクラス
 - File class: ファイルとstd::vector\<std::uint8_t\>を相互に変換する為のクラス
+- RasterImage class: ラスタ画像の読み書きを行う為のクラス
 
 が利用できます。詳しい使い方に関しては
 
@@ -66,9 +68,8 @@ $ make docs
 を行うことでdoxygenを利用して生成されるドキュメントを参照してください。
 
 ## TODO
-以下のアルゴリズムを実装する予定です。
-
-- Deflate
+- グラフィックス関連機能の実装
+- 最小二乗法の実装
 
 ## NOT TODO
 以下のアルゴリズムは宗教的な理由により実装*しない*予定です。
